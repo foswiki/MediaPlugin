@@ -88,7 +88,7 @@ From those startpoints, basically everything gets merged:
 all synonymous parameters get sent (e.g. QT's "AutoPlay",
 Flash's "Play" and WMV's "AutoStart") together, set to the same value.
 
-Then everything is smoodged onto one line, TWiki doesn't like html tags over line
+Then everything is smoodged onto one line, Foswiki doesn't like html tags over line
 breaks, but I also noticed tables and Lists getting broken from line breaks
 added by the plugin, so one line for everything. 
 
@@ -105,7 +105,7 @@ This is sort-of what I was aiming for with =USEEMBED=. I assumed that you could 
 but that will break on everything but IE, as the other browsers (a little churlishly) ingore the entire tag if it has MS's custom params in it.
 
 ---++ defining additional file formats
-The output of this plugin is paritally goverend by TWiki templates. the mov file output is defined in =templates/objectplugin_mov.tmpl=,
+The output of this plugin is paritally goverend by Foswiki templates. the mov file output is defined in =templates/objectplugin_mov.tmpl=,
 which contains the classid's, codebase etc.
 <verbatim>
 %TMPL:DEF{objectHeader_mov}%classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" %TMPL:END%
@@ -120,7 +120,7 @@ Plugin settings are stored as preferences variables. To reference
 a plugin setting write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, for example, ==%<nop>INTERWIKIPLUGIN_SHORTDESCRIPTION%==
 
    * One line description, shown in the %SYSTEMWEB%.TextFormattingRules topic:
-   * Set SHORTDESCRIPTION = Embed Multi-Media Objects into TWiki topics (replaces EmbedPlugin)
+   * Set SHORTDESCRIPTION = Embed Multi-Media Objects into Foswiki topics (replaces EmbedPlugin)
 
    * Default parameters for plugin. These *must* be defined. (For booleans use "TRUE" for true, anything else for false)
    * Set WIDTH = 320
@@ -148,21 +148,20 @@ You should see something below:
 
 ---++ Plugin Info
 
-|  Plugin Authors: | TWiki:Main.PiersGoodhew, TWiki:Main.SvenDowideit |
-|  Copyright: | &copy; 2006 TWiki:Main.PiersGoodhew, 2008 TWiki:Main.SvenDowideit |
+|  Plugin Authors: | TWiki:Main.PiersGoodhew, Foswiki:Main.SvenDowideit |
+|  Copyright: | &copy; 2006 TWiki:Main.PiersGoodhew, 2008-2009 Foswiki:Main.SvenDowideit |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Plugin Version: | %$VERSION% |
-|  20 Oct 2008 | modernise with Foswiki:Extensions.BuildContrib, add EMBED Tag, remove WikiWord issues, templatise html output, add youtube supprt - TWiki:Main.SvenDowideit |
+| 20 Feb 2009 | port to Foswiki |
+|  20 Oct 2008 | modernise with Foswiki:Extensions.BuildContrib, add EMBED Tag, remove WikiWord issues, templatise html output, add youtube supprt - Foswiki:Main.SvenDowideit |
 |  16 Oct 2006 | initial version |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
 |  Dependencies: | %$DEPENDENCIES% |
-|  Plugin Home: | http://twiki.org/cgi-bin/view/Plugins/ObjectPlugin |
-|  Feedback: | http://twiki.org/cgi-bin/view/Plugins/ObjectPluginDev |
-|  Appraisal: | http://twiki.org/cgi-bin/view/Plugins/ObjectPluginAppraisal |
+|  Plugin Home: | http://foswiki.org/Extensions/ObjectPlugin |
 
 __Related Topics:__ [[%SYSTEMWEB%.Plugins][Plugins]], %SYSTEMWEB%.DeveloperDocumentationCategory, %SYSTEMWEB%.AdminDocumentationCategory, %SYSTEMWEB%.DefaultPreferences, %USERSWEB%.SitePreferences
 
-<!-- Do _not_ attempt to edit this topic; it is auto-generated. Please add comments/questions/remarks to the feedback topic on twiki.org instead. -->
+<!-- Do _not_ attempt to edit this topic; it is auto-generated. Please add comments/questions/remarks to the feedback topic on foswiki.org instead. -->
 
 
 %META:FILEATTACHMENT{name="sample.html" attr="" autoattached="1" comment="sample html file" date="1160707557" path="sample.html" size="110" user="Main.WikiGuest" version="2"}%

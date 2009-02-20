@@ -1,6 +1,6 @@
 # ObjectPlugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# Copyright (C) TWiki:Main.PiersGoodhew & TWikiContributors.
+# Copyright (C) TWiki:Main.PiersGoodhew SvenDowideit@fosiki.com & FoswikiContributors.
 
 =pod
 
@@ -9,27 +9,17 @@
 =cut
 
 # change the package name and $pluginName!!!
-package TWiki::Plugins::ObjectPlugin;
+package Foswiki::Plugins::ObjectPlugin;
 
 # Always use strict to enforce variable scoping
 use strict;
 
-# $VERSION is referred to by TWiki, and is the only global variable that
-# *must* exist in this package
 use vars qw( $VERSION $RELEASE $debug $pluginName $objectPluginDefHeight
   $objectPluginDefWidth $objectPluginDefUseEMBED $objectPluginDefController
   $objectPluginDefPlay $kMediaFileExtsPattern $htmlId);
 
-
-# This should always be $Rev: 9813$ so that TWiki can determine the checked-in
-# status of the plugin. It is used by the build automation tools, so
-# you should leave it alone.
 $VERSION = '$Rev$';
-
-# This is a free-form string you can use to "name" your own plugin version.
-# It is *not* used by the build automation tools, but is reported as part
-# of the version number in PLUGINDESCRIPTIONS.
-$RELEASE = 'Dakar';
+$RELEASE = 'Foswiki-1.0';
 
 # Name of this Plugin, only used in this module
 $pluginName = 'ObjectPlugin';
@@ -48,30 +38,30 @@ sub initPlugin {
     my ( $topic, $web, $user, $installWeb ) = @_;
 
     # check for Plugins.pm versions
-    if ( $TWiki::Plugins::VERSION < 1.026 ) {
-        TWiki::Func::writeWarning(
+    if ( $Foswiki::Plugins::VERSION < 1.026 ) {
+        Foswiki::Func::writeWarning(
             "Version mismatch between $pluginName and Plugins.pm");
         return 0;
     }
 
     #TODO: these should be moved into Config.spec for performance.
     $objectPluginDefHeight =
-      TWiki::Func::getPreferencesValue("\U$pluginName\E_HEIGHT");
+      Foswiki::Func::getPreferencesValue("\U$pluginName\E_HEIGHT");
     $objectPluginDefWidth =
-      TWiki::Func::getPreferencesValue("\U$pluginName\E_WIDTH");
+      Foswiki::Func::getPreferencesValue("\U$pluginName\E_WIDTH");
     $objectPluginDefController =
-      TWiki::Func::getPreferencesValue("\U$pluginName\E_CONTROLLER");
+      Foswiki::Func::getPreferencesValue("\U$pluginName\E_CONTROLLER");
     $objectPluginDefPlay =
-      TWiki::Func::getPreferencesValue("\U$pluginName\E_PLAY");
+      Foswiki::Func::getPreferencesValue("\U$pluginName\E_PLAY");
     $objectPluginDefUseEMBED =
-      TWiki::Func::getPreferencesValue("\U$pluginName\E_USEEMBED");
+      Foswiki::Func::getPreferencesValue("\U$pluginName\E_USEEMBED");
 
     $objectPluginDefUseEMBED =
       ( $objectPluginDefUseEMBED eq "TRUE" );  #This one needs to be a perl bool
 
     # register the OBJECT function to handle %OBJECT{...}%
-    TWiki::Func::registerTagHandler( 'OBJECT', \&_OBJECT );
-    TWiki::Func::registerTagHandler( 'EMBED',  \&_EMBED );
+    Foswiki::Func::registerTagHandler( 'OBJECT', \&_OBJECT );
+    Foswiki::Func::registerTagHandler( 'EMBED',  \&_EMBED );
 
     # Plugin correctly initialized
     return 1;
@@ -144,12 +134,12 @@ sub _OBJECT {
     #TODO: can I replace these with one tmpl file per format?
     # eg objectplugin_mov.tmpl? that way a skin could over-ride it with objectplugin_mov.jquery.tmpl
     # and thus we can
-    TWiki::Func::loadTemplate ( 'objectplugin_'.$fileExt );
-    my $format_objectHeader = TWiki::Func::expandTemplate('objectHeader_'.$fileExt);
+    Foswiki::Func::loadTemplate ( 'objectplugin_'.$fileExt );
+    my $format_objectHeader = Foswiki::Func::expandTemplate('objectHeader_'.$fileExt);
     if ($format_objectHeader eq '') { #use generic
-        TWiki::Func::loadTemplate ( 'objectplugin' );
-        $objectHeader .= TWiki::Func::expandTemplate('objectHeader');
-        $embedTags .= TWiki::Func::expandTemplate ( 'embedTag' );
+        Foswiki::Func::loadTemplate ( 'objectplugin' );
+        $objectHeader .= Foswiki::Func::expandTemplate('objectHeader');
+        $embedTags .= Foswiki::Func::expandTemplate ( 'embedTag' );
         $localParams{data} = $localParams{src};
         $objectHeader .=  'data="'.$localParams{data}.'"';
         delete $localParams{src};
@@ -158,10 +148,10 @@ sub _OBJECT {
     } else {
         $objectHeader .= $format_objectHeader;
         if ($objectPluginDefUseEMBED) {
-            $embedTags .= TWiki::Func::expandTemplate ( 'embedTag_'.$fileExt );
+            $embedTags .= Foswiki::Func::expandTemplate ( 'embedTag_'.$fileExt );
         }
         if ( $localParams{controller} ) {
-            $height += TWiki::Func::expandTemplate('controlerHeight_'.$fileExt);
+            $height += Foswiki::Func::expandTemplate('controlerHeight_'.$fileExt);
         }
     }
 

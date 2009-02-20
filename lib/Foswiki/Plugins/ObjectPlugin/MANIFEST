@@ -1,0 +1,12 @@
+# Release manifest for ObjectPlugin
+data/System/ObjectPlugin.txt 0644 Documentation
+lib/Foswiki/Plugins/ObjectPlugin.pm 0644 Perl module
+
+pub/System/ObjectPlugin/Sample.swf
+pub/System/ObjectPlugin/sample.mov
+pub/System/ObjectPlugin/sample.html
+
+templates/objectplugin.tmpl
+templates/objectplugin_mov.tmpl
+templates/objectplugin_wmv.tmpl
+templates/objectplugin_swf.tmpl
