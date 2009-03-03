@@ -1,5 +1,4 @@
-%META:TOPICINFO{author="WikiGuest" date="1160739585" format="1.1" reprev="1.14" version="1.14"}%
-
+%META:TOPICINFO{author="ProjectContributor" date="1236122755" format="1.1" version="1.1"}%
 ---+!! Media Plugin
 
 %SHORTDESCRIPTION%
@@ -18,8 +17,7 @@ These defaults can of course be overridden on a use-by-use basis.
 
 A =USEEMBED= flag should be left to "true" - I thought I could be clever before I fully understood the minefield that is browser plugin syntax.
 
-It also supports Foswiki:Extensions.EmbedPlugin's =EMBED= syntax to enable it to superceed that plugin:
-   * %<nop>EMBED{filename="string" width="number" height="number"}%
+%TOC%
 
 ---++Basic Usage
 
@@ -27,13 +25,13 @@ You *could* call the plugin as simply as:
 
 =%<nop>OBJECT{"SomeMovie.mov"}%=
 
-This will detect that the embedded file is a QuickTime and use "media-like" syntax (and pass the correct =CLASSID= to IE - why it can't work out which plugin to use is a little beyond me). However, unlike an IMG tag, plugins do not autosize to their content, and the movie would display at the default size. You could use media of only one size site-wide and specify the dimensions as defaults, but realistically the minimum markup you need to embed things into your wiki pages is:
+This will detect that the embedded file is a !QuickTime and use "media-like" syntax (and pass the correct =CLASSID= to IE - why it can't work out which plugin to use is a little beyond me). However, unlike an =IMG= tag, plugins do not autosize to their content, and the movie would display at the default size. You could use media of only one size site-wide and specify the dimensions as defaults, but realistically the minimum markup you need to embed things into your wiki pages is:
 
 =%<nop>OBJECT{"SomeMovie.swf" width="320" height="180"}%=
 
----++Advanced Usage
+---++ Advanced Usage
 
-A call to the ObjectPlugin could get as complicated as:
+A call to the !MediaPlugin could get as complicated as:
 
 =%<nop>OBJECT{src="SomeMovie.wmv" width="320" height="180" controller="FALSE" play="TRUE" useembed="TRUE" myparam1="3.1419" myparam2="edinburgh"}%=
 
@@ -41,9 +39,9 @@ Once you start passing a ton of parameters, you aren't gaining much by using the
 
 %H% Including a "mime-type" parameter may help your browser choose which browser plugin to use more efficiently
 
----++Paramters
+---++ Parameters
 
-ObjectPlugin supports arbitrary parameters. If you pass it =cowtype="Jersey"=, that is passed on to the browser, both as a =<<nop>PARAM>= tag and inside the optional =<<nop>EMBED>= tag.
+!MediaPlugin supports arbitrary parameters. If you pass it =cowtype="Jersey"=, that is passed on to the browser, both as a =<<nop>PARAM>= tag and inside the optional =<<nop>EMBED>= tag.
 
 A few parameters are defined and get handled a little differently (they may be "translated" to a particular browser plugins syntax)
 
@@ -52,10 +50,10 @@ A few parameters are defined and get handled a little differently (they may be "
 |width|std web measure (px, %, em)|with of box holding content||
 |height|std web measure (px, %, em)|height of box holding content||
 |controller|text boolean ("TRUE" or "FALSE")|whether to display controls|automatically added|
-|play|text boolean|whether to auto-play the content| automatically added for QT and Flash|
+|play|text boolean|whether to auto-play the content| automatically added for !QuickTime and Flash|
 |useembed| text boolean|whether to include a non-standard (but widely recommended) =EMBED= tag||
 
----++Detection of media type/Recommended plugin syntax
+---++ Detection of media type/Recommended plugin syntax
 
 The plugin detects most media types and uses a hybrid of the html markup
 recommended by the browser plugin makers -
@@ -66,12 +64,12 @@ This is done simply by checking the extension of the filename.
 Originally, the plugin used (almost) the exact recommended HTML on a type-by-type basis,
 but I've abandoned this in favour of "one markup fits all" because you don't
 know which plugin will be handling what - the various ISO formats (MPEG1,2,4, MP3)
-will be taken by whatever plugin was installed last, and QuickTime now handles
+will be taken by whatever plugin was installed last, and !QuickTime now handles
 Windows Media on Macintosh systems (at Microsoft's recommendation!).
 
 While most of the HTML is as generic as possible, the =CLASSID= value and some
 other mime-type information is unique to a particular file-type, and for Flash,
-QuickTime and Windows Media the  Microsoft-sanctioned values are sent.
+!QuickTime and Windows Media the  Microsoft-sanctioned values are sent.
 I understand MSIE has to have this info or it totally burns ...
 
 I haven't bothered with Real.
@@ -85,7 +83,7 @@ The sytax recommendations are found:
    * [[http://www.adobe.com/cfusion/knowledgebase/index.cfm?id=tn_4150][Flash]]
 
 From those startpoints, basically everything gets merged:
-all synonymous parameters get sent (e.g. QT's "AutoPlay",
+all synonymous parameters get sent (e.g. !QuickTime's "AutoPlay",
 Flash's "Play" and WMV's "AutoStart") together, set to the same value.
 
 Then everything is smoodged onto one line, Foswiki doesn't like html tags over line
@@ -104,7 +102,7 @@ http://alistapart.com/articles/byebyeembed
 This is sort-of what I was aiming for with =USEEMBED=. I assumed that you could just leave =EMBED= out,
 but that will break on everything but IE, as the other browsers (a little churlishly) ingore the entire tag if it has MS's custom params in it.
 
----++ defining additional file formats
+---++ Defining additional file formats
 The output of this plugin is paritally goverend by Foswiki templates. the mov file output is defined in =templates/objectplugin_mov.tmpl=,
 which contains the classid's, codebase etc.
 <verbatim>
@@ -159,13 +157,11 @@ You should see something below:
 |  16 Oct 2006 | initial version |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
 |  Dependencies: | %$DEPENDENCIES% |
-|  Plugin Home: | http://foswiki.org/Extensions/ObjectPlugin |
-
-__Related Topics:__ [[%SYSTEMWEB%.Plugins][Plugins]], %SYSTEMWEB%.DeveloperDocumentationCategory, %SYSTEMWEB%.AdminDocumentationCategory, %SYSTEMWEB%.DefaultPreferences, %USERSWEB%.SitePreferences
+|  Plugin Home: | http://foswiki.org/Extensions/MediaPlugin |
+|  Support: | http://foswiki.org/Support/MediaPlugin |
 
 <!-- Do _not_ attempt to edit this topic; it is auto-generated. Please add comments/questions/remarks to the feedback topic on foswiki.org instead. -->
 
-
-%META:FILEATTACHMENT{name="sample.html" attr="" autoattached="1" comment="sample html file" date="1160707557" path="sample.html" size="110" user="Main.WikiGuest" version="2"}%
-%META:FILEATTACHMENT{name="sample.mov" attr="" autoattached="1" comment="sample QT movie" date="1160739512" path="sample.mov" size="21681" user="Main.WikiGuest" version="1"}%
-%META:FILEATTACHMENT{name="Sample.swf" attr="" autoattached="1" comment="" date="1160707933" path="Sample.swf" size="1831" user="Main.WikiGuest" version="1"}%
+%META:FILEATTACHMENT{name="sample.html" attr="" autoattached="1" comment="sample html file" date="1160707557" path="sample.html" size="110" user="Main.ProjectContributor" version="2"}%
+%META:FILEATTACHMENT{name="sample.mov" attr="" autoattached="1" comment="sample QT movie" date="1160739512" path="sample.mov" size="21681" user="Main.ProjectContributor" version="1"}%
+%META:FILEATTACHMENT{name="Sample.swf" attr="" autoattached="1" comment="" date="1160707933" path="Sample.swf" size="1831" user="Main.ProjectContributor" version="1"}%

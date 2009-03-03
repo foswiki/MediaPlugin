@@ -1,15 +1,15 @@
-# ObjectPlugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
+# MediaPlugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
 # Copyright (C) TWiki:Main.PiersGoodhew SvenDowideit@fosiki.com & FoswikiContributors.
 
 =pod
 
----+ package ObjectPlugin
+---+ package MediaPlugin
 
 =cut
 
 # change the package name and $pluginName!!!
-package Foswiki::Plugins::ObjectPlugin;
+package Foswiki::Plugins::MediaPlugin;
 
 # Always use strict to enforce variable scoping
 use strict;
@@ -19,10 +19,10 @@ use vars qw( $VERSION $RELEASE $debug $pluginName $objectPluginDefHeight
   $objectPluginDefPlay $kMediaFileExtsPattern $htmlId);
 
 $VERSION = '$Rev$';
-$RELEASE = 'Foswiki-1.0';
+$RELEASE = '1.1';
 
 # Name of this Plugin, only used in this module
-$pluginName = 'ObjectPlugin';
+$pluginName = 'MediaPlugin';
 
 =pod
 
@@ -132,12 +132,12 @@ sub _OBJECT {
     $localParams{movie} = $localParams{filename} = $localParams{src};
     
     #TODO: can I replace these with one tmpl file per format?
-    # eg objectplugin_mov.tmpl? that way a skin could over-ride it with objectplugin_mov.jquery.tmpl
+    # eg mediaplugin_mov.tmpl? that way a skin could over-ride it with mediaplugin_mov.jquery.tmpl
     # and thus we can
-    Foswiki::Func::loadTemplate ( 'objectplugin_'.$fileExt );
+    Foswiki::Func::loadTemplate ( 'mediaplugin_'.$fileExt );
     my $format_objectHeader = Foswiki::Func::expandTemplate('objectHeader_'.$fileExt);
     if ($format_objectHeader eq '') { #use generic
-        Foswiki::Func::loadTemplate ( 'objectplugin' );
+        Foswiki::Func::loadTemplate ( 'mediaplugin' );
         $objectHeader .= Foswiki::Func::expandTemplate('objectHeader');
         $embedTags .= Foswiki::Func::expandTemplate ( 'embedTag' );
         $localParams{data} = $localParams{src};
@@ -168,7 +168,7 @@ sub _OBJECT {
     if ($objectPluginDefUseEMBED) {
         $embedTags .= "height=\"$height\" width=\"$width \"></embed>\n";
     }
-    $objectHeader .= "height=\"$height\" width=\"$width\" id=\"ObjectPlugin".$htmlId++."\" \">\n";
+    $objectHeader .= "height=\"$height\" width=\"$width\" id=\"MediaPlugin".$htmlId++."\" \">\n";
 
     return $objectHeader . $objectParams . $embedTags . $objectFooter;
 }
