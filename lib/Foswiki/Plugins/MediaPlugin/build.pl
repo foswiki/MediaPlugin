@@ -5,7 +5,7 @@ BEGIN {
 use Foswiki::Contrib::Build;
 
 # Create the build object
-$build = new Foswiki::Contrib::Build('ObjectPlugin');
+$build = new Foswiki::Contrib::Build('MediaPlugin');
 
 # (Optional) Set the details of the repository for uploads.
 # This can be any web on any accessible Foswiki installation.
