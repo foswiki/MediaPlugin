@@ -1,6 +1,6 @@
 %META:TOPICINFO{author="WikiGuest" date="1160739585" format="1.1" reprev="1.14" version="1.14"}%
 
----+!! The Object Plugin
+---+!! Media Plugin
 
 %SHORTDESCRIPTION%
 
@@ -120,7 +120,7 @@ Plugin settings are stored as preferences variables. To reference
 a plugin setting write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, for example, ==%<nop>INTERWIKIPLUGIN_SHORTDESCRIPTION%==
 
    * One line description, shown in the %SYSTEMWEB%.TextFormattingRules topic:
-   * Set SHORTDESCRIPTION = Embed Multi-Media Objects into Foswiki topics (replaces EmbedPlugin)
+   * Set SHORTDESCRIPTION = Embed Multi-Media Objects into Foswiki topics
 
    * Default parameters for plugin. These *must* be defined. (For booleans use "TRUE" for true, anything else for false)
    * Set WIDTH = 320
@@ -152,7 +152,9 @@ You should see something below:
 |  Copyright: | &copy; 2006 TWiki:Main.PiersGoodhew, 2008-2009 Foswiki:Main.SvenDowideit |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Plugin Version: | %$VERSION% |
-| 20 Feb 2009 | port to Foswiki |
+|  Plugin Release: | %$RELEASE% |
+|  03 Mar 2009 | !ObjectPlugin renamed to !MediaPlugin |
+|  20 Feb 2009 | port to Foswiki |
 |  20 Oct 2008 | modernise with Foswiki:Extensions.BuildContrib, add EMBED Tag, remove WikiWord issues, templatise html output, add youtube supprt - Foswiki:Main.SvenDowideit |
 |  16 Oct 2006 | initial version |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
