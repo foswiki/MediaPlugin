@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1236122755" format="1.1" version="1.1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1236472252" format="1.1" reprev="1.1" version="1.1"}%
 ---+!! Media Plugin
 
 %SHORTDESCRIPTION%
@@ -14,8 +14,6 @@ The plugin stores a range of default values (defined here on this page)
 which allow you to specify a bare minimum of info in your markup and still
 get acceptable results (see [[#Basic_Usage][Basic Usage]] below).
 These defaults can of course be overridden on a use-by-use basis.
-
-A =USEEMBED= flag should be left to "true" - I thought I could be clever before I fully understood the minefield that is browser plugin syntax.
 
 %TOC%
 
@@ -33,41 +31,72 @@ This will detect that the embedded file is a !QuickTime and use "media-like" syn
 
 A call to the !MediaPlugin could get as complicated as:
 
-=%<nop>OBJECT{src="SomeMovie.wmv" width="320" height="180" controller="FALSE" play="TRUE" useembed="TRUE" myparam1="3.1419" myparam2="edinburgh"}%=
+=%<nop>OBJECT{src="SomeMovie.wmv" width="320" height="180" controller="FALSE" play="TRUE" myparam1="3.1419" myparam2="edinburgh"}%=
 
 Once you start passing a ton of parameters, you aren't gaining much by using the plugin, and you may actually be reducing the portability of your code, so it may be best to do your own HTML.
 
 %H% Including a "mime-type" parameter may help your browser choose which browser plugin to use more efficiently
 
----++ Parameters
+---++ Syntax
 
-!MediaPlugin supports arbitrary parameters. If you pass it =cowtype="Jersey"=, that is passed on to the browser, both as a =<<nop>PARAM>= tag and inside the optional =<<nop>EMBED>= tag.
+!MediaPlugin supports arbitrary parameters. If you pass it =cowtype="Jersey"=, that is passed on to the browser, both as a =<<nop>PARAM>= tag.
 
-A few parameters are defined and get handled a little differently (they may be "translated" to a particular browser plugins syntax)
+A few parameters are defined and get handled a little differently (they may be "translated" to a particular browser plugins syntax).
 
-|*Parameter*|*Value*|*Description*|*Notes**|
-|src|URI|the content to embed ("src=" is optional)||
-|width|std web measure (px, %, em)|with of box holding content||
-|height|std web measure (px, %, em)|height of box holding content||
-|controller|text boolean ("TRUE" or "FALSE")|whether to display controls|automatically added|
-|play|text boolean|whether to auto-play the content| automatically added for !QuickTime and Flash|
-|useembed| text boolean|whether to include a non-standard (but widely recommended) =EMBED= tag||
+| *Parameter*  | *Value* | *Description* | *Notes* |
+| =src=        | URI or file name | the content to embed | "src=" is optional |
+| =width=      | Standard web measure (px, %, em) | width of box holding content | |
+| =height=     | Standard web measure (px, %, em) | height of box holding content| |
+| =controller= | text boolean ("TRUE" or "FALSE")| whether to display controls|automatically added |
+| =play=       | text boolean | whether to auto-play the content| automatically added for !QuickTime and Flash |
+
+---+++ Attributes for Flash swf
+
+Pass Flash movie attributes within the =%<nop>MEDIA{...}%= accolades (all values within quotes). When a particular parameter is not specified, the default value will be used (see table below).
+
+<!-- %TABLE{sort="off" headeralign="left"}% -->
+| *Parameter*   | *Comment*   | *Example*   |
+| <strong>Required attributes</strong>  ||||
+| =src=     | Filepath of the movie; should have suffix =.swf= ("src=" can be omitted) | =mypath/flashmovie.swf= |
+| <strong>General attributes</strong>  |||
+| =width=  | Width of Flash movie in pixels, or a percentage. 100% means one hundred percent of the available width on the page. | ="50%"= or ="500px"= |
+| =height=  | Height of Flash movie in pixels, or a percentage. 100% means one hundred percent of the available height on the page. | ="50%"= or ="500px"= |
+| =bgcolor= | Background color of Flash movie in hex string. When omitted, no background color will be specified and the background color of the Flash movie will be used. | ="#cccccc"= |
+| <strong>Advanced attributes</strong>  |||
+| =align= | Default centers the movie in the browser window and crops edges if the browser window is smaller than the movie. =l= (left), =r= (right), =t= (top), and =b= (bottom) align the movie along the corresponding edge of the browser window and crop the remaining three sides as needed. | ="l"=, ="r"=, ="t"=, ="b"= |
+| =salign= | =l=, =r=, =t=, and =b= align the movie along the left, right, top or bottom edge, respectively, of the browser window and crop the remaining three sides as needed. %BR% \
+=tl= and =tr= align the movie to the top left and top right corner, respectively, of the browser window and crop the bottom and remaining right or left side as needed. %BR% \
+=bl= and =br= align the movie to the bottom left and bottom right corner, respectively, of the browser window and crop the top and remaining right or left side as needed. | ="l"=, ="t"=, ="r"=, ="b"=, ="tl"=, ="tr"=, ="bl"=, ="br"= |
+| =scale= | Scaling of Flash movie. | ="noborder"=, ="exactfit"=, ="noscale"=, ="showall"= |
+| =quality= | Playback quality. | ="best"=, ="high"=, ="medium"=, ="low"=, ="autohigh"=, ="autolow"= |
+| =menu= | Should right-click on Flash movie show a (default) menu? Note that with the Flash 7 player the menu cannot be removed. | ="true"= or ="false"= |
+| =id=     | ID of Flash movie; for general use not necessary to specify. | ="movie2"= |
+| =wmode= | Sets the Window Mode property of the Flash movie for transparency, layering, and positioning in the browser. %BR% \
+=window= - movie plays in its own rectangular window on a web page. %BR% \
+=opaque= - the movie hides everything on the page behind it. %BR% \
+=transparent= - the background of the HTML page shows through all transparent portions of the movie, this may slow animation performance. | ="window"=, ="opaque"= or ="transparent"= |
+| =play= | Specifies whether the movie begins playing immediately on loading in the browser. | ="true"= or ="false"= | 
+| =loop= | Specifies whether the movie repeats indefinitely or stops when it reaches the last frame. | ="true"= or ="false"= |
+| =allowscriptaccess= | Controls the ability to perform outbound scripting from within a Flash SWF. %BR% \
+When allowScriptAccess is =never=, outbound scripting always fails. %BR% \
+When allowScriptAccess is =always=, outbound scripting always succeeds. %BR% \
+If allowScriptAccess is =sameDomain= (it is supported in SWFs from Flash Player 8), outbound scripting is allowed only if the SWF file resides in the same domain as the hosting web page. | ="sameDomain"=, ="always"= or ="never"= |
+| =fullscreen= | Enabled scriptable fullscreen mode. An overlay dialog box will appear when the movie enters full-screen mode, instructing the user how to exit and return to normal mode. The dialog box appears for a few seconds and then fades out. | ="true"= or ="false"= |
+| =base= | Specifies the base directory or URL used to resolve all relative path statements in the Flash Player movie. This attribute is helpful when your Flash Player movies are kept in a different directory from your other files. | any directory URL, or empty string =""= |
+| =swliveconnect= | Specifies whether the browser should start Java when loading the Flash Player for the first time. | ="true"= or ="false"= |
+| =flashvars= | Variables to be passed to the Flash movie. Multiple variables are separated by =&amp;=. | =flashvars="x=50&y=100&url=%<nop>ATTACHURL%/picture.jpg"= |
+
+More information on  [[http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701&sliceId=1][Flash OBJECT and EMBED tag attributes]] (Adobe !TechNote).
 
 ---++ Detection of media type/Recommended plugin syntax
 
 The plugin detects most media types and uses a hybrid of the html markup
-recommended by the browser plugin makers -
-in the hope of providing maximum compatibility.
-This is done simply by checking the extension of the filename.
-*Or, if the filename contains =youtube.com= it will automatically use flash*
+recommended by the browser plugin makers - in the hope of providing maximum compatibility.
+This is done simply by checking the extension of the filename. Or, if the filename contains =youtube.com= it will automatically use Flash.
 
-Originally, the plugin used (almost) the exact recommended HTML on a type-by-type basis,
-but I've abandoned this in favour of "one markup fits all" because you don't
-know which plugin will be handling what - the various ISO formats (MPEG1,2,4, MP3)
-will be taken by whatever plugin was installed last, and !QuickTime now handles
-Windows Media on Macintosh systems (at Microsoft's recommendation!).
+Originally, the plugin used (almost) the exact recommended HTML on a type-by-type basis, but I've abandoned this in favor of "one markup fits all" because you don't know which plugin will be handling what - the various ISO formats (MPEG1,2,4, MP3) will be taken by whatever plugin was installed last, and !QuickTime now handles Windows Media on Macintosh systems (at Microsoft's recommendation!).
 
-While most of the HTML is as generic as possible, the =CLASSID= value and some
+While most of the HTML is as generic as possible, the =classid= value and some
 other mime-type information is unique to a particular file-type, and for Flash,
 !QuickTime and Windows Media the  Microsoft-sanctioned values are sent.
 I understand MSIE has to have this info or it totally burns ...
@@ -82,35 +111,135 @@ The sytax recommendations are found:
    * [[http://support.microsoft.com/default.aspx?scid=kb;en-us;Q285154][Windows Media]] (is it just me or is there almost no doco from Microsoft on this?)
    * [[http://www.adobe.com/cfusion/knowledgebase/index.cfm?id=tn_4150][Flash]]
 
-From those startpoints, basically everything gets merged:
-all synonymous parameters get sent (e.g. !QuickTime's "AutoPlay",
-Flash's "Play" and WMV's "AutoStart") together, set to the same value.
-
-Then everything is smoodged onto one line, Foswiki doesn't like html tags over line
-breaks, but I also noticed tables and Lists getting broken from line breaks
-added by the plugin, so one line for everything. 
-
-And (to keep the plugin reasonably simple) _all_ information passed inside
-=PARAM= tags is also put in the =EMBED= tag (and any special =EMBED= only parameters go first). 
-
-In other words, all parameters recommended by the plugin maker are sent, plus more, and in any old order.
-
-This is an interesting article on getting "pure" OBJECT tags to both a) validate and b) work with browsers:
-
-http://alistapart.com/articles/byebyeembed 
-
-This is sort-of what I was aiming for with =USEEMBED=. I assumed that you could just leave =EMBED= out,
-but that will break on everything but IE, as the other browsers (a little churlishly) ingore the entire tag if it has MS's custom params in it.
 
 ---++ Defining additional file formats
-The output of this plugin is paritally goverend by Foswiki templates. the mov file output is defined in =templates/objectplugin_mov.tmpl=,
-which contains the classid's, codebase etc.
+The output of this plugin is partially governed by Foswiki templates. The =mov= file output is defined in =templates/objectplugin_mov.tmpl=:
 <verbatim>
-%TMPL:DEF{objectHeader_mov}%classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" %TMPL:END%
-%TMPL:DEF{embedTag_mov}%TYPE="video/quicktime" PLUGINSPAGE="http://www.apple.com/quicktime/download/" %TMPL:END%
-%TMPL:DEF{controlerHeight_mov}%16%TMPL:END%
+%TMPL:DEF{"object"}%<object{MP_OBJECT_ATTRIBUTES}>{MP_OBJECT_PARAMS}<embed{MP_EMBED_ATTRIBUTES}/></object>%TMPL:END%
 </verbatim>
+Placeholders ={MP_...}= are replaced by =%<nop>MEDIA{...}%= parameters. 
+
 To add other types add your own template using the same naming scheme (=objectplugin_ext.tmpl=).
+
+---++ Examples
+
+---+++ wmv
+<verbatim>
+%MEDIA{
+"http://support.microsoft.com/support/mediaplayer/wmptest/samples/new/mediaexample.wmv"
+height="240"
+width="320"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"http://support.microsoft.com/support/mediaplayer/wmptest/samples/new/mediaexample.wmv"
+height="240"
+width="320"
+}%
+
+---+++ mov
+<verbatim>
+%MEDIA{
+"%ATTACHURL%/sample.mov"
+height="180"
+width="320"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"%ATTACHURL%/sample.mov"
+height="180"
+width="320"
+}%
+
+By default the controller is shown (unless attribute =controller="false"=), and the controller height (16px) is automatically added to the movie height.
+
+---+++ swf
+<verbatim>
+%MEDIA{
+"%ATTACHURL%/sample.swf"
+height="180"
+width="320"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"%ATTACHURL%/sample.swf"
+height="180"
+width="320"
+}%
+
+---+++ swf with params
+These are just a number of example parameters; not all are effective in this movie.
+<verbatim>
+%MEDIA{
+src="%ATTACHURL%/swf/ThumbController.swf"
+width="430"
+height="370"
+bgcolor="#ffffff"
+menu="false"
+base="%ATTACHURL%/swf/"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+src="%ATTACHURL%/swf/ThumbController.swf"
+width="430"
+height="370"
+bgcolor="#ffffff"
+menu="false"
+base="%ATTACHURL%/swf/"
+}%
+
+---+++ !YouTube
+<verbatim>
+%MEDIA{
+"http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1"
+width="425"
+height="344"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1"
+width="425"
+height="344"
+}%
+
+---+++ html
+<verbatim>
+%MEDIA{
+"%ATTACHURL%/sample.html"
+arbitrary="plplpl"
+}%
+</verbatim>
+
+generates:
+
+%MEDIA{
+"%ATTACHURL%/sample.html"
+arbitrary="plplpl"
+}%
+
+---+++ png
+<verbatim>
+%MEDIA{
+data="%ATTACHURL%/img/big/Faux-Fur.jpg"
+type="image/png"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+data="%ATTACHURL%/img/big/Faux-Fur.jpg"
+type="image/png"
+}%
 
 ---++ <nop>%TOPIC% Global Settings
 
@@ -125,35 +254,24 @@ a plugin setting write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, for example, =
    * Set HEIGHT = 180
    * Set CONTROLLER = TRUE
    * Set PLAY = TRUE
-   * Set USEEMBED = TRUE
 
+   * Set DEBUG = 0
+   
 ---++ Installation Instructions
 
 %$INSTALL_INSTRUCTIONS%
 
----+++ Validation:
-You should see something below:
----++++ wmv
-%OBJECT{"http://support.microsoft.com/support/mediaplayer/wmptest/samples/new/mediaexample.wmv" height="240" width="320"}%
----++++ mov
-%OBJECT{"%ATTACHURL%/sample.mov" height="180" width="320"}%
----++++ swf
-%OBJECT{"%ATTACHURL%/Sample.swf" height="180" width="320"}%
----++++ you-tube
-%OBJECT{"http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1" width="425" height="344"}%
----++++ html
-%OBJECT{"%ATTACHURL%/sample.html" arbitrary="plplpl"}%
 
 ---++ Plugin Info
 
 |  Plugin Authors: | TWiki:Main.PiersGoodhew, Foswiki:Main.SvenDowideit |
-|  Copyright: | &copy; 2006 TWiki:Main.PiersGoodhew, 2008-2009 Foswiki:Main.SvenDowideit |
+|  Copyright: | &copy; 2006 TWiki:Main.PiersGoodhew, 2008-2009 Foswiki:Main.SvenDowideit, Foswiki:Main.ArthurClemens |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
-|  Plugin Version: | %$VERSION% |
-|  Plugin Release: | %$RELEASE% |
+|  Plugin Version: | 1.2 |
+|  08 Mar 2009 | Integrated !EmbedFlashPlugin; major code refactoring. |
 |  03 Mar 2009 | !ObjectPlugin renamed to !MediaPlugin |
 |  20 Feb 2009 | port to Foswiki |
-|  20 Oct 2008 | modernise with Foswiki:Extensions.BuildContrib, add EMBED Tag, remove WikiWord issues, templatise html output, add youtube supprt - Foswiki:Main.SvenDowideit |
+|  20 Oct 2008 | modernise with Foswiki:Extensions.BuildContrib, add EMBED Tag, remove WikiWord issues, templatise html output, add !YouTube supprt - Foswiki:Main.SvenDowideit |
 |  16 Oct 2006 | initial version |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
 |  Dependencies: | %$DEPENDENCIES% |
@@ -162,6 +280,10 @@ You should see something below:
 
 <!-- Do _not_ attempt to edit this topic; it is auto-generated. Please add comments/questions/remarks to the feedback topic on foswiki.org instead. -->
 
-%META:FILEATTACHMENT{name="sample.html" attr="" autoattached="1" comment="sample html file" date="1160707557" path="sample.html" size="110" user="Main.ProjectContributor" version="2"}%
-%META:FILEATTACHMENT{name="sample.mov" attr="" autoattached="1" comment="sample QT movie" date="1160739512" path="sample.mov" size="21681" user="Main.ProjectContributor" version="1"}%
-%META:FILEATTACHMENT{name="Sample.swf" attr="" autoattached="1" comment="" date="1160707933" path="Sample.swf" size="1831" user="Main.ProjectContributor" version="1"}%
+
+%META:FILEATTACHMENT{name="sample.mov" attr="" autoattached="1" comment="" date="1225563775" path="sample.mov" size="21681" version=""}%
+%META:FILEATTACHMENT{name="img" attr="" autoattached="1" comment="" date="1236439695" path="img" size="170" version=""}%
+%META:FILEATTACHMENT{name="sample.fla" attr="" autoattached="1" comment="" date="1227115487" path="sample.fla" size="43520" version=""}%
+%META:FILEATTACHMENT{name="sample.html" attr="" autoattached="1" comment="" date="1225563775" path="sample.html" size="110" version=""}%
+%META:FILEATTACHMENT{name="sample.swf" attr="" autoattached="1" comment="" date="1227115487" path="sample.swf" size="1981" version=""}%
+%META:FILEATTACHMENT{name="swf" attr="" autoattached="1" comment="" date="1236439710" path="swf" size="102" version=""}%

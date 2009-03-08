@@ -1,6 +1,13 @@
+%TMPL:DEF{"object"}%<object{MP_OBJECT_ATTRIBUTES}>{MP_OBJECT_PARAMS}<embed{MP_EMBED_ATTRIBUTES}/></object>%TMPL:END%
 
-%TMPL:DEF{objectHeader_mov}%classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" %TMPL:END%
+%{ "attributes that are set for object, not for embed" }%
+%TMPL:DEF{"syntax:object_only_attributes"}%classid,codebase%TMPL:END%
 
-%TMPL:DEF{embedTag_mov}%TYPE="video/quicktime" PLUGINSPAGE="http://www.apple.com/quicktime/download/" %TMPL:END%
+%{ "attributes that are set for embed, not for object" }%
+%TMPL:DEF{"syntax:embed_only_attributes"}%pluginspage%TMPL:END%
 
-%TMPL:DEF{controlerHeight_mov}%16%TMPL:END%
+%{ "attributes that should be set as object attribute, not as param" }%
+%TMPL:DEF{"syntax:object_attributes"}%width,height,align%TMPL:END%
+
+%{ "default attribute values" }%
+%TMPL:DEF{"syntax:default_attributes"}%classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" pluginspage="/quicktime/download/"%TMPL:END%

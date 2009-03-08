@@ -14,15 +14,18 @@ package Foswiki::Plugins::MediaPlugin;
 # Always use strict to enforce variable scoping
 use strict;
 
-use vars qw( $VERSION $RELEASE $debug $pluginName $objectPluginDefHeight
-  $objectPluginDefWidth $objectPluginDefUseEMBED $objectPluginDefController
-  $objectPluginDefPlay $kMediaFileExtsPattern $htmlId);
-
-$VERSION = '$Rev$';
-$RELEASE = '1.1';
+my $VERSION = '$Rev$';
+my $RELEASE = '1.2';
+my $debug   = 0;
 
 # Name of this Plugin, only used in this module
-$pluginName = 'MediaPlugin';
+my $pluginName = 'MediaPlugin';
+my $PLUGIN_SETTING_WIDTH;
+my $PLUGIN_SETTING_HEIGHT;
+my $PLUGIN_SETTING_SHOW_CONTROLLER;
+my $PLUGIN_SETTING_AUTOPLAY;
+
+#my $htmlId; # not used
 
 =pod
 
@@ -45,130 +48,306 @@ sub initPlugin {
     }
 
     #TODO: these should be moved into Config.spec for performance.
-    $objectPluginDefHeight =
+    $PLUGIN_SETTING_HEIGHT =
       Foswiki::Func::getPreferencesValue("\U$pluginName\E_HEIGHT");
-    $objectPluginDefWidth =
+    $PLUGIN_SETTING_WIDTH =
       Foswiki::Func::getPreferencesValue("\U$pluginName\E_WIDTH");
-    $objectPluginDefController =
-      Foswiki::Func::getPreferencesValue("\U$pluginName\E_CONTROLLER");
-    $objectPluginDefPlay =
-      Foswiki::Func::getPreferencesValue("\U$pluginName\E_PLAY");
-    $objectPluginDefUseEMBED =
-      Foswiki::Func::getPreferencesValue("\U$pluginName\E_USEEMBED");
+    $PLUGIN_SETTING_SHOW_CONTROLLER =
+      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_CONTROLLER") );
+    $PLUGIN_SETTING_AUTOPLAY =
+      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_PLAY") );
 
-    $objectPluginDefUseEMBED =
-      ( $objectPluginDefUseEMBED eq "TRUE" );  #This one needs to be a perl bool
+    $debug =
+      Foswiki::Func::isTrue( TWiki::Func::getPluginPreferencesFlag("DEBUG") );
 
-    # register the OBJECT function to handle %OBJECT{...}%
-    Foswiki::Func::registerTagHandler( 'OBJECT', \&_OBJECT );
-    Foswiki::Func::registerTagHandler( 'EMBED',  \&_EMBED );
+    # register the OBJECT function to handle %MEDIA{...}%
+    Foswiki::Func::registerTagHandler( 'MEDIA', \&_MEDIA );
+
+    # support old syntax:
+    Foswiki::Func::registerTagHandler( 'OBJECT', \&_MEDIA );
 
     # Plugin correctly initialized
     return 1;
 }
 
-sub _EMBED {
-    my ( $session, $params, $theTopic, $theWeb ) = @_;
-    $params->{_EMBED} = 1; #signal that this should use MediaPlayer
-    return _OBJECT( $session, $params, $theTopic, $theWeb );
+=pod
+
+---++ _MEDIA( $session, $params, $topic, $web ) -> $html
+
+Handle MEDIA tag.
+
+=cut
+
+sub _MEDIA {
+    my ( $inSession, $inParams, $inTopic, $inWeb ) = @_;
+
+    # get media format
+    my $source =
+         $inParams->{_DEFAULT}
+      || $inParams->{src}
+      || $inParams->{data}
+      || $inParams->{filename};
+    my ( $fileHeader, $extension ) = ( $source =~ /(.*)\.+(.*$)/i );
+
+    $extension = 'swf' if ( $source =~ m/youtube.com/i );
+
+    return _handleEmbedSwf( $source, @_ ) if lc($extension) eq 'swf';
+    return _handleEmbedMov( $source, @_ ) if lc($extension) eq 'mov';
+    return _handleEmbedWmv( $source, @_ ) if lc($extension) eq 'wmv';
+
+    # generic formats:
+    return _handleEmbedGeneric( $source, @_ );
 }
 
-# Our actual function
-sub _OBJECT {
-    my ( $session, $params, $theTopic, $theWeb ) = @_;
-    my $objectParams = " ";
-    my $embedTags    = " ";
-    if ($objectPluginDefUseEMBED) {
-        $embedTags = "\t<EMBED "
-          ; #you want a trailing space on pretty much everything that isn't an end tag
-    }
-    my $objectHeader = "<OBJECT ";
-    my $objectFooter = "</OBJECT>";
-    my $returnValue  = "";
-    my ( $key, $value ) = ( 0, 0 );
+=pod
 
-    #	return $objectPluginDefUseEMBED;
+---++ _handleEmbedMov( $source, $session, $params, $topic, $web ) -> $html
 
-#These three values are passed inside the <OBJECT> tag and not as <PARAM>s later ...
-    my $height = $params->{height};
-    my $width  = $params->{width};
-    $params->{src} ||= $params->{_DEFAULT} || $params->{filename};
+Calls _createHtml with type 'mov'.
 
-  #"src" is optional so we try the default param if "src" is ND
-  #and if neither src, nor _DEFAULT are defined, try the EmbedPlugin filename=''
+=cut
 
-    #fall special values back to default if nd
-    $height ||= $objectPluginDefHeight;
-    $width  ||= $objectPluginDefWidth;
+sub _handleEmbedMov {
+    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
 
-#copy the params into our own hash, then delete the values (if they're there) which are handled differently
-#(if at all)
-    my %localParams = %$params;
-    delete $localParams{width}    if $localParams{width};
-    delete $localParams{height}   if $localParams{height};
-    delete $localParams{_DEFAULT} if $localParams{_DEFAULT};
-    delete $localParams{_RAW}
-      if $localParams{_RAW};  #don't know what it is or does, but it's there ...
+    # QuickTime specific params
+    my $localParams = $inParams;
+    $localParams->{'controller'} ||= $PLUGIN_SETTING_SHOW_CONTROLLER;
+    $localParams->{'height'} += 16 if $localParams->{'controller'};
+    $localParams->{'autoplay'} ||= $localParams->{'play'} ||=
+      lc($PLUGIN_SETTING_AUTOPLAY);
+    delete $localParams->{'play'};
 
-    #detect file type ... this should be inside an if (don't be generic) block
-    my ( $fileHeader, $fileExt ) = ( $localParams{src} =~ /(.*)\.+(.*$)/ );
-    
-    #EmbedPlugin hardcoded to MediaPlayer
-    if ($params->{_EMBED} == 1) {
-        $fileExt = 'wmv';
-        delete $params->{_EMBED};
-    }
-    #assume youtube uses swf
-    if ($localParams{src} =~ /youtube.com/) {
-        $fileExt = 'swf';
-    }
-
-#We have a media-y file, fill out our various param synonyms from params/defaults
-    $localParams{controller} ||= $objectPluginDefController;
-    $localParams{showcontroller} =
-      ( uc( $localParams{controller} ) eq "TRUE" ) ? 1 : 0;
-    $localParams{autoplay} ||= $localParams{play} ||= $objectPluginDefPlay;
-    $localParams{autostart} = ( uc( $localParams{play} ) eq "TRUE" ) ? 1 : 0;
-    $localParams{movie} = $localParams{filename} = $localParams{src};
-    
-    #TODO: can I replace these with one tmpl file per format?
-    # eg mediaplugin_mov.tmpl? that way a skin could over-ride it with mediaplugin_mov.jquery.tmpl
-    # and thus we can
-    Foswiki::Func::loadTemplate ( 'mediaplugin_'.$fileExt );
-    my $format_objectHeader = Foswiki::Func::expandTemplate('objectHeader_'.$fileExt);
-    if ($format_objectHeader eq '') { #use generic
-        Foswiki::Func::loadTemplate ( 'mediaplugin' );
-        $objectHeader .= Foswiki::Func::expandTemplate('objectHeader');
-        $embedTags .= Foswiki::Func::expandTemplate ( 'embedTag' );
-        $localParams{data} = $localParams{src};
-        $objectHeader .=  'data="'.$localParams{data}.'"';
-        delete $localParams{src};
-        delete $localParams{movie};
-        delete $localParams{filename};
-    } else {
-        $objectHeader .= $format_objectHeader;
-        if ($objectPluginDefUseEMBED) {
-            $embedTags .= Foswiki::Func::expandTemplate ( 'embedTag_'.$fileExt );
-        }
-        if ( $localParams{controller} ) {
-            $height += Foswiki::Func::expandTemplate('controlerHeight_'.$fileExt);
-        }
-    }
-
- #We can now parse the params out into the OBJECT and (maybe) the EMBED tags ...
-    while ( ( $key, $value ) = each %localParams ) {
-        $objectParams .=
-          ( "\t<PARAM name=\"" . $key . "\" value=\"" . $value . "\" > \n" );
-        if ($objectPluginDefUseEMBED) {
-            $embedTags .= ( $key . "=\"" . $value . "\" " );
-        }
-    }
-
-    #complete the OBJECT and (maybe) EMBED tags with the size param
-    if ($objectPluginDefUseEMBED) {
-        $embedTags .= "height=\"$height\" width=\"$width \"></embed>\n";
-    }
-    $objectHeader .= "height=\"$height\" width=\"$width\" id=\"MediaPlugin".$htmlId++."\" \">\n";
-
-    return $objectHeader . $objectParams . $embedTags . $objectFooter;
+    return _createHtml( $inSource, $localParams, 'mov' );
 }
+
+=pod
+
+---++ _handleEmbedWmv( $source, $session, $params, $topic, $web ) -> $html
+
+Calls _createHtml with type 'wmv'.
+
+=cut
+
+sub _handleEmbedWmv {
+    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+
+    # WMV specific params
+    my $localParams = $inParams;
+    $localParams->{'ShowControls'} ||= $localParams->{'controller'} ||=
+      $PLUGIN_SETTING_SHOW_CONTROLLER;
+    delete $localParams->{'controller'};
+    $localParams->{'height'} += 46 if $localParams->{'ShowControls'};
+    $localParams->{'autostart'} ||= $localParams->{'play'} ||=
+      lc($PLUGIN_SETTING_AUTOPLAY);
+    delete $localParams->{'play'};
+
+    return _createHtml( $inSource, $localParams, 'wmv' );
+}
+
+=pod
+
+---++ _handleEmbedSwf( $source, $session, $params, $topic, $web ) -> $html
+
+Calls _createHtml with type 'swf'.
+
+See [[http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701][Flash OBJECT and EMBED tag attributes]].
+
+=cut
+
+sub _handleEmbedSwf {
+    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+
+    return _createHtml( $inSource, $inParams, 'swf' );
+}
+
+=pod
+
+---++ _handleEmbedGeneric( $source, $session, $params, $topic, $web ) -> $html
+
+Embeds generic media formats such as 'html'. See [[http://www.w3.org/TR/REC-html40/struct/objects.html][Objects, Images, and Applets]].
+
+Calls _createHtml with type 'generic'.
+
+=cut
+
+sub _handleEmbedGeneric {
+    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+
+    my $localParams = $inParams;
+    $localParams->{'data'} ||= $inSource;
+    delete $localParams->{'src'};
+    delete $localParams->{'_DEFAULT'};
+
+    return _createHtml( undef, $localParams, 'generic' );
+}
+
+=pod
+
+---++ _createHtml( $source, $params, $type ) -> $html
+
+Reads in type specific template and substitutes attribute placeholders.
+
+=cut
+
+sub _createHtml {
+    my ( $inSource, $inParams, $inType ) = @_;
+
+    my $type = $inType || '';
+    my $PATTERN_SPLIT = '\s*,\s*';
+
+    my $templateName = _getTemplateName($type);
+    Foswiki::Func::loadTemplate($templateName);
+
+    my $txt_default_attributes =
+      Foswiki::Func::expandTemplate('syntax:default_attributes');
+    my %default_attributes =
+      Foswiki::Func::extractParameters($txt_default_attributes);
+    delete $default_attributes{_RAW};
+    delete $default_attributes{_DEFAULT};
+
+    if ($debug) {
+        use Data::Dumper;
+        Foswiki::Func::writeDebug(
+"MediaPlugin::_createHtml; default_attributes read from template '$templateName':"
+              . Dumper(%default_attributes) );
+    }
+
+    my $localParams;
+    if (%default_attributes) {
+        $localParams = _mergeHashes( $inParams, \%default_attributes );
+    }
+    else {
+        $localParams = $inParams;
+    }
+
+    # set default values
+    $localParams->{'src'} = $inSource if $inSource;
+    $localParams->{'width'}  ||= $PLUGIN_SETTING_WIDTH;
+    $localParams->{'height'} ||= $PLUGIN_SETTING_HEIGHT;
+
+    if ($debug) {
+        use Data::Dumper;
+        Foswiki::Func::writeDebug(
+            "MediaPlugin::_createHtml; type=$type; localParams="
+              . Dumper($localParams) );
+    }
+
+    my $txt_object_only_attributes =
+      Foswiki::Func::expandTemplate('syntax:object_only_attributes');
+    _trimSpaces($txt_object_only_attributes);
+    my $txt_embed_only_attributes =
+      Foswiki::Func::expandTemplate('syntax:embed_only_attributes');
+    _trimSpaces($txt_embed_only_attributes);
+    my $txt_object_attributes =
+      Foswiki::Func::expandTemplate('syntax:object_attributes');
+    _trimSpaces($txt_object_attributes);
+
+    my %object_only_attributes =
+      map { $_ => 1 }
+      split( $PATTERN_SPLIT, $txt_object_only_attributes )
+      if $txt_object_only_attributes;
+    my %embed_only_attributes =
+      map { $_ => 1 }
+      split( $PATTERN_SPLIT, $txt_embed_only_attributes )
+      if $txt_embed_only_attributes;
+    my %object_attributes =
+      map { $_ => 1 }
+      split( $PATTERN_SPLIT, $txt_object_attributes )
+      if $txt_object_attributes;
+
+    # load text from template, then replace placeholders
+    my $text = Foswiki::Func::expandTemplate('object');
+
+    # sort params for easier testing and debugging
+    foreach my $key ( sort keys %$localParams ) {
+
+        # do not use attributes starting with an underscore
+        next if $key =~ m/^_.*?$/;
+
+        my $value = $localParams->{$key};
+
+        Foswiki::Func::writeDebug(
+            "MediaPlugin::_createHtml; key=$key;value=$value")
+          if $debug;
+
+        if ( $object_only_attributes{$key} ) {
+            $text =~ s/({MP_OBJECT_ATTRIBUTES})/ $key="$value"$1/go;
+            next;
+        }
+        if ( $embed_only_attributes{$key} ) {
+            $text =~ s/({MP_EMBED_ATTRIBUTES})/ $key="$value"$1/go;
+            next;
+        }
+        if ( $object_attributes{$key} ) {
+            $text =~ s/({MP_OBJECT_ATTRIBUTES})/ $key="$value"$1/go;
+        }
+        else {
+            $text =~
+              s/({MP_OBJECT_PARAMS})/<param name="$key" value="$value" \/>$1/go;
+        }
+        $text =~ s/({MP_EMBED_ATTRIBUTES})/ $key="$value"$1/go;
+    }
+
+    # clean up placeholders, no longer needed
+    $text =~ s/{MP_OBJECT_ATTRIBUTES}//go;
+    $text =~ s/{MP_OBJECT_PARAMS}//go;
+    $text =~ s/{MP_EMBED_ATTRIBUTES}//go;
+
+    return "<noautolink>$text</noautolink>";
+}
+
+=pod
+
+---++ _getTemplateName ( $type ) -> $text
+
+Gets the name of a type specific template. For instance: type 'swf' gets template 'mediaplugin_swf'.
+
+=cut
+
+sub _getTemplateName {
+    my ( $inType, $inModule ) = @_;
+
+    my $templateName = 'mediaplugin';
+    $templateName .= "_$inType" if $inType && $inType ne 'generic';
+    return $templateName;
+}
+
+=pod
+
+mergeHashes (\%a, \%b ) -> \%merged
+
+Merges 2 hash references.
+
+=cut
+
+sub _mergeHashes {
+    my ( $A, $B ) = @_;
+
+    my %merged = ();
+    while ( my ( $k, $v ) = each(%$A) ) {
+        $merged{$k} = $v;
+    }
+    while ( my ( $k, $v ) = each(%$B) ) {
+        $merged{$k} = $v;
+    }
+    return \%merged;
+}
+
+=pod
+
+trimSpaces( $text ) -> $text
+
+Removes spaces from both sides of the text.
+
+=cut
+
+sub _trimSpaces {
+
+    #my $text = $_[0]
+
+    $_[0] =~ s/^[[:space:]]+//s;    # trim at start
+    $_[0] =~ s/[[:space:]]+$//s;    # trim at end
+}
+
+1;

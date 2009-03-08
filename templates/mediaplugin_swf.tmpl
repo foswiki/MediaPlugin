@@ -1,5 +1,13 @@
+%TMPL:DEF{"object"}%<object{MP_OBJECT_ATTRIBUTES}>{MP_OBJECT_PARAMS}<embed{MP_EMBED_ATTRIBUTES}/></object>%TMPL:END%
 
-%TMPL:DEF{objectHeader_swf}%classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"  %TMPL:END%
+%{ "attributes that are set for object, not for embed" }%
+%TMPL:DEF{"syntax:object_only_attributes"}%classid,codebase,movie,id,align%TMPL:END%
 
-%TMPL:DEF{embedTag_swf}%type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" name=myMovieName%TMPL:END%
+%{ "attributes that are set for embed, not for object" }%
+%TMPL:DEF{"syntax:embed_only_attributes"}%src,pluginspage,name%TMPL:END%
 
+%{ "attributes that should be set as object attribute, not as param" }%
+%TMPL:DEF{"syntax:object_attributes"}%width,height%TMPL:END%
+
+%{ "default attribute values" }%
+%TMPL:DEF{"syntax:default_attributes"}%classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0"%TMPL:END%
