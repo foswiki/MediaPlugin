@@ -1,6 +1,6 @@
 # MediaPlugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# Copyright (C) TWiki:Main.PiersGoodhew SvenDowideit@fosiki.com & FoswikiContributors.
+# Copyright (C) TWiki:Main.PiersGoodhew SvenDowideit@fosiki.com arthur@visiblearea.com and Foswiki Contributors.
 
 =pod
 
@@ -11,19 +11,25 @@
 # change the package name and $pluginName!!!
 package Foswiki::Plugins::MediaPlugin;
 
+use Error qw( :try );
+
 # Always use strict to enforce variable scoping
 use strict;
 
 my $VERSION = '$Rev$';
-my $RELEASE = '1.2';
-my $debug   = 0;
+my $RELEASE = '1.3';
 
-# Name of this Plugin, only used in this module
+my $debug   = 0;
+my $installWeb;
 my $pluginName = 'MediaPlugin';
+
+# plugin global settings
 my $PLUGIN_SETTING_WIDTH;
 my $PLUGIN_SETTING_HEIGHT;
 my $PLUGIN_SETTING_SHOW_CONTROLLER;
 my $PLUGIN_SETTING_AUTOPLAY;
+
+my $MIMETYPES; # filled by parsing mimetypes.txt, when necessary
 
 #my $htmlId; # not used
 
@@ -38,7 +44,7 @@ my $PLUGIN_SETTING_AUTOPLAY;
 =cut
 
 sub initPlugin {
-    my ( $topic, $web, $user, $installWeb ) = @_;
+    my ( $inTopic, $inWeb, $inUser, $inInstallWeb ) = @_;
 
     # check for Plugins.pm versions
     if ( $Foswiki::Plugins::VERSION < 1.026 ) {
@@ -47,6 +53,8 @@ sub initPlugin {
         return 0;
     }
 
+	$installWeb = $inInstallWeb;
+	
     #TODO: these should be moved into Config.spec for performance.
     $PLUGIN_SETTING_HEIGHT =
       Foswiki::Func::getPreferencesValue("\U$pluginName\E_HEIGHT");
@@ -88,15 +96,15 @@ sub _MEDIA {
       || $inParams->{data}
       || $inParams->{filename};
     my ( $fileHeader, $extension ) = ( $source =~ /(.*)\.+(.*$)/i );
-
+	$extension = lc($extension);
     $extension = 'swf' if ( $source =~ m/youtube.com/i );
 
-    return _handleEmbedSwf( $source, @_ ) if lc($extension) eq 'swf';
-    return _handleEmbedMov( $source, @_ ) if lc($extension) eq 'mov';
-    return _handleEmbedWmv( $source, @_ ) if lc($extension) eq 'wmv';
+    return _handleEmbedSwf( $source, $extension, @_ ) if $extension eq 'swf';
+    return _handleEmbedMov( $source, $extension, @_ ) if $extension eq 'mov';
+    return _handleEmbedWmv( $source, $extension, @_ ) if $extension eq 'wmv';
 
     # generic formats:
-    return _handleEmbedGeneric( $source, @_ );
+    return _handleEmbedGeneric( $source, $extension, @_ );
 }
 
 =pod
@@ -108,7 +116,7 @@ Calls _createHtml with type 'mov'.
 =cut
 
 sub _handleEmbedMov {
-    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
 
     # QuickTime specific params
     my $localParams = $inParams;
@@ -130,7 +138,7 @@ Calls _createHtml with type 'wmv'.
 =cut
 
 sub _handleEmbedWmv {
-    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
 
     # WMV specific params
     my $localParams = $inParams;
@@ -156,7 +164,7 @@ See [[http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701][Flash 
 =cut
 
 sub _handleEmbedSwf {
-    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
 
     return _createHtml( $inSource, $inParams, 'swf' );
 }
@@ -172,13 +180,25 @@ Calls _createHtml with type 'generic'.
 =cut
 
 sub _handleEmbedGeneric {
-    my ( $inSource, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
 
     my $localParams = $inParams;
     $localParams->{'data'} ||= $inSource;
+    
+    # we are not sure which plugin will play (possible) audio/video
+    # so we add both - only if param 'play' is passed explicitly
+    # (otherwise we set autostart to jpeg files which is a bit silly)
+    $localParams->{'autostart'} ||= $localParams->{'play'} if $localParams->{'play'};
+    $localParams->{'autoplay'} ||= $localParams->{'play'} if $localParams->{'play'};
+      
     delete $localParams->{'src'};
     delete $localParams->{'_DEFAULT'};
 
+	# add mimetype if not passed
+	if (!$localParams->{'type'}) {
+		_createMimeTypeTable($inSession) if !defined $MIMETYPES;
+		$localParams->{'type'} ||= $MIMETYPES->{$inExtension} if defined $MIMETYPES;
+	}
     return _createHtml( undef, $localParams, 'generic' );
 }
 
@@ -311,6 +331,31 @@ sub _getTemplateName {
     my $templateName = 'mediaplugin';
     $templateName .= "_$inType" if $inType && $inType ne 'generic';
     return $templateName;
+}
+
+=pod
+
+Creates mimetype tabe $MIMETYPES from reading and parsing attachment 'mimetypes.txt.
+
+=cut
+
+sub _createMimeTypeTable {
+    my ( $inSession ) = @_;
+
+	try {
+		my $types =
+		  $inSession->{store}->getAttachmentStream( undef, $installWeb, $pluginName, 'mimetypes.txt' );
+		local $/ = undef;
+		%{ $MIMETYPES } = split( /\s+/, <$types> );
+		close($types);
+	}
+	catch Error::Simple with {
+		%{ $MIMETYPES } = ();
+	};
+	if ($debug) {
+		use Data::Dumper;
+		Foswiki::Func::writeDebug("MediaPlugin::_createMimeTypeTable; MIMETYPES=" . (keys %{ $MIMETYPES }) . " keys");
+	}
 }
 
 =pod

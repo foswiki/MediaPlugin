@@ -1,13 +1,11 @@
 %META:TOPICINFO{author="ProjectContributor" date="1236472252" format="1.1" reprev="1.1" version="1.1"}%
 ---+!! Media Plugin
 
-%SHORTDESCRIPTION%
+%SHORTDESCRIPTION%.
 
-Uses the =OBJECT= html tag to embed arbitrary content into a wiki page, with a particular bent towards media:
-common media formats are detected and some "agnostic best-guess" html is used (derived from that recommended by
+Uses the =OBJECT= html tag to embed arbitrary content into a page, with a particular bent towards media: common media formats are detected and some "agnostic best-guess" html is used (derived from that recommended by
 the plugin providers).
-However, any content at all can be embedded using the object tag: java, pdf, other html, svg,
-even images (although there is of course no reason to do so).
+However, any content can be embedded using the object tag: java, pdf, other html, svg, even images (although for the latter is of course no real reason to do so this way).
 The plugin uses generic syntax when it cannot detect the type of file being embedded.
 
 The plugin stores a range of default values (defined here on this page)
@@ -17,45 +15,69 @@ These defaults can of course be overridden on a use-by-use basis.
 
 %TOC%
 
----++Basic Usage
+---++ Basic Usage
 
 You *could* call the plugin as simply as:
 
-=%<nop>OBJECT{"SomeMovie.mov"}%=
+<verbatim>
+%MEDIA{"SomeMovie.mov"}%
+</verbatim>
 
-This will detect that the embedded file is a !QuickTime and use "media-like" syntax (and pass the correct =CLASSID= to IE - why it can't work out which plugin to use is a little beyond me). However, unlike an =IMG= tag, plugins do not autosize to their content, and the movie would display at the default size. You could use media of only one size site-wide and specify the dimensions as defaults, but realistically the minimum markup you need to embed things into your wiki pages is:
+This will detect that the embedded file is a !QuickTime and use "media-like" syntax (and pass the correct =classid= to IE - why it can't work out which plugin to use is a little beyond me). However, unlike an =IMG= tag, plugins do not autosize to their content, and the movie would display at the default size. You could use media of only one size site-wide and specify the dimensions as defaults, but realistically the minimum markup you need to embed things into your wiki pages is:
 
-=%<nop>OBJECT{"SomeMovie.swf" width="320" height="180"}%=
+=%<nop>MEDIA{"SomeMovie.swf" width="320" height="180"}%=
 
 ---++ Advanced Usage
 
 A call to the !MediaPlugin could get as complicated as:
 
-=%<nop>OBJECT{src="SomeMovie.wmv" width="320" height="180" controller="FALSE" play="TRUE" myparam1="3.1419" myparam2="edinburgh"}%=
+<verbatim>
+%MEDIA{
+src="SomeMovie.wmv"
+width="320"
+height="180"
+controller="FALSE"
+play="TRUE"
+myparam1="3.1419"
+myparam2="edinburgh"
+}%
+</verbatim>
 
-Once you start passing a ton of parameters, you aren't gaining much by using the plugin, and you may actually be reducing the portability of your code, so it may be best to do your own HTML.
+See for possible attributes below.
 
-%H% Including a "mime-type" parameter may help your browser choose which browser plugin to use more efficiently
+Note that !MediaPlugin figures out the correct mime type parameter so that the correct plugin will be called to deal with that content.
 
 ---++ Syntax
 
-!MediaPlugin supports arbitrary parameters. If you pass it =cowtype="Jersey"=, that is passed on to the browser, both as a =<<nop>PARAM>= tag.
+!MediaPlugin supports arbitrary parameters. If you pass it =cowtype="Jersey"=, it will passed on to the browser.
 
 A few parameters are defined and get handled a little differently (they may be "translated" to a particular browser plugins syntax).
 
 | *Parameter*  | *Value* | *Description* | *Notes* |
-| =src=        | URI or file name | the content to embed | "src=" is optional |
-| =width=      | Standard web measure (px, %, em) | width of box holding content | |
-| =height=     | Standard web measure (px, %, em) | height of box holding content| |
-| =controller= | text boolean ("TRUE" or "FALSE")| whether to display controls|automatically added |
-| =play=       | text boolean | whether to auto-play the content| automatically added for !QuickTime and Flash |
+| =""=, =src=, =data=        | URI or file name | The content to embed. Relative URIs are interpreted with respect to the =codebase= attribute if it is given. | |
+| =width=      | Standard web measure (px, %, em) | Width of box holding content | |
+| =height=     | Standard web measure (px, %, em) | Height of box holding content| |
+| =controller= | text boolean ("TRUE" or "FALSE")| Whether to display controls|automatically added |
+| =play=       | text boolean | whether to auto-play the content| Automatically added for !QuickTime and Flash |
 
----+++ Attributes for Flash swf
+---+++ Syntax for !QuickTime mov
+
+See [[http://www.apple.com/quicktime/tutorials/embed2.html][Overview of Embed Tag Attributes]] for !QuickTime.
+
+---+++ Syntax for Flash swf
 
 Pass Flash movie attributes within the =%<nop>MEDIA{...}%= accolades (all values within quotes). When a particular parameter is not specified, the default value will be used (see table below).
 
-<!-- %TABLE{sort="off" headeralign="left"}% -->
-| *Parameter*   | *Comment*   | *Example*   |
+%TWISTY{
+remember="on"
+prefix="<h4>"
+mode="div"
+showlink="&#9658; Attributes for Flash"
+hidelink="&#9660; Attributes for Flash"
+suffix="</h4>"
+}%
+%TABLE{sort="off" headeralign="left"}%
+| *Parameter*   | *Description*   | *Example*   |
 | <strong>Required attributes</strong>  ||||
 | =src=     | Filepath of the movie; should have suffix =.swf= ("src=" can be omitted) | =mypath/flashmovie.swf= |
 | <strong>General attributes</strong>  |||
@@ -85,41 +107,43 @@ If allowScriptAccess is =sameDomain= (it is supported in SWFs from Flash Player 
 | =base= | Specifies the base directory or URL used to resolve all relative path statements in the Flash Player movie. This attribute is helpful when your Flash Player movies are kept in a different directory from your other files. | any directory URL, or empty string =""= |
 | =swliveconnect= | Specifies whether the browser should start Java when loading the Flash Player for the first time. | ="true"= or ="false"= |
 | =flashvars= | Variables to be passed to the Flash movie. Multiple variables are separated by =&amp;=. | =flashvars="x=50&y=100&url=%<nop>ATTACHURL%/picture.jpg"= |
+%ENDTWISTY%
 
 More information on  [[http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701&sliceId=1][Flash OBJECT and EMBED tag attributes]] (Adobe !TechNote).
 
----++ Detection of media type/Recommended plugin syntax
+---++ Syntax for generic objects
+The attributes described at Syntax above is mostly all you need. For advanced usage see the table below.
 
-The plugin detects most media types and uses a hybrid of the html markup
-recommended by the browser plugin makers - in the hope of providing maximum compatibility.
-This is done simply by checking the extension of the filename. Or, if the filename contains =youtube.com= it will automatically use Flash.
+%TWISTY{
+remember="on"
+prefix="<h4>"
+mode="div"
+showlink="&#9658; Attributes for generic objects"
+hidelink="&#9660; Attributes for generic objects"
+suffix="</h4>"
+}%
+ %TABLE{sort="off" headeralign="left"}%
+| *Parameter*   | *Value* | *Description*   |
+| =align= | left, right, top, bottom | Defines the text alignment around the object |
+| =archive= | URL | A space separated list of URL's to archives. The archives contains resources relevant to the object |
+| =border= | pixels | Defines a border around the object |
+| =classid= | class ID | Defines a class ID value as set in the Windows Registry or a URL |
+| =codebase= | URL | Defines where to find the code for the object |
+| =codetype= | MIME type | The internet media type of the code referred to by the classid attribute |
+| =data= | URL | Defines a URL that refers to the object's data |
+| =declare= | declare | Defines that the object should only be declared, not created or instantiated until needed |
+| =height= | pixels | Defines the height of the object |
+| =hspace= | pixels | Defines the horizontal spacing around the object |
+| =name= | unique_name | Defines a unique name for the object (to use in scripts) |
+| =standby= | text | Defines a text to display while the object is loading |
+| =type= | MIME_type | Defines the MIME type of data specified in the data attribute. See [[http://www.iana.org/assignments/media-types/][MIME Media Types]]. |
+| =usemap= | URL | Specifies a URL of a client-side image map to be used with the object |
+| =vspace= | pixels | Defines the vertical spacing around the object |
+| =width= | pixels | Defines the width of the object |
+%ENDTWISTY%
 
-Originally, the plugin used (almost) the exact recommended HTML on a type-by-type basis, but I've abandoned this in favor of "one markup fits all" because you don't know which plugin will be handling what - the various ISO formats (MPEG1,2,4, MP3) will be taken by whatever plugin was installed last, and !QuickTime now handles Windows Media on Macintosh systems (at Microsoft's recommendation!).
-
-While most of the HTML is as generic as possible, the =classid= value and some
-other mime-type information is unique to a particular file-type, and for Flash,
-!QuickTime and Windows Media the  Microsoft-sanctioned values are sent.
-I understand MSIE has to have this info or it totally burns ...
-
-I haven't bothered with Real.
-If there's huge demand, it wouldn't be hard to add -
-but it may also be handled quite well by the generic media syntax already.
-
-The sytax recommendations are found:
-
-   * [[http://developer.apple.com/documentation/QuickTime/Conceptual/QTScripting_HTML/QTScripting_HTML_Document/chapter_1000_section_2.html#//apple_ref/doc/uid/TP40001525-2-UsingtheltEMBEDgtandltOBJECTgtTags][QuickTime]]
-   * [[http://support.microsoft.com/default.aspx?scid=kb;en-us;Q285154][Windows Media]] (is it just me or is there almost no doco from Microsoft on this?)
-   * [[http://www.adobe.com/cfusion/knowledgebase/index.cfm?id=tn_4150][Flash]]
-
-
----++ Defining additional file formats
-The output of this plugin is partially governed by Foswiki templates. The =mov= file output is defined in =templates/objectplugin_mov.tmpl=:
-<verbatim>
-%TMPL:DEF{"object"}%<object{MP_OBJECT_ATTRIBUTES}>{MP_OBJECT_PARAMS}<embed{MP_EMBED_ATTRIBUTES}/></object>%TMPL:END%
-</verbatim>
-Placeholders ={MP_...}= are replaced by =%<nop>MEDIA{...}%= parameters. 
-
-To add other types add your own template using the same naming scheme (=objectplugin_ext.tmpl=).
+---++ Syntax for wmv
+Sorry - I could not find any page for this.
 
 ---++ Examples
 
@@ -231,15 +255,72 @@ arbitrary="plplpl"
 <verbatim>
 %MEDIA{
 data="%ATTACHURL%/img/big/Faux-Fur.jpg"
-type="image/png"
 }%
 </verbatim>
 generates:
 
 %MEDIA{
 data="%ATTACHURL%/img/big/Faux-Fur.jpg"
-type="image/png"
 }%
+
+Note: you should not really consider displaying images this way.
+
+---+++ pdf
+<verbatim>
+%MEDIA{
+"http://www.pdf-tools.com/public/downloads/whitepapers/whitepaper-pdfprimer.pdf"
+width="100%"
+height="100%"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"http://www.pdf-tools.com/public/downloads/whitepapers/whitepaper-pdfprimer.pdf"
+width="100%"
+height="100%"
+}%
+
+---+++ midi
+<verbatim>
+%MEDIA{
+"%ATTACHURL%/brahms-intermezzo-op118-no2.mid"
+play="false"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"%ATTACHURL%/brahms-intermezzo-op118-no2.mid"
+play="false"
+}%
+
+---++ Notes for developers
+---+++ Detection of media type / recommended plugin syntax
+
+The plugin detects most media types and uses a hybrid of the html markup
+recommended by the browser plugin makers - in the hope of providing maximum compatibility.
+This is done simply by checking the extension of the filename. Or, if the filename contains =youtube.com= it will automatically use Flash.
+
+Originally, the plugin used (almost) the exact recommended HTML on a type-by-type basis, but I've abandoned this in favor of "one markup fits all" because you don't know which plugin will be handling what - the various ISO formats (MPEG1,2,4, MP3) will be taken by whatever plugin was installed last, and !QuickTime now handles Windows Media on Macintosh systems (at Microsoft's recommendation!).
+
+While most of the HTML is as generic as possible, the =classid= value and some
+other mime-type information is unique to a particular file-type, and for Flash,
+!QuickTime and Windows Media the Microsoft-sanctioned values are sent.
+I understand MSIE has to have this info or it totally burns ...
+
+I haven't bothered with Real. If there's huge demand, it wouldn't be hard to add - but it may also be handled quite well by the generic media syntax already.
+
+
+---+++ Defining additional file formats
+The output of this plugin is partially governed by Foswiki templates. The =mov= file output is defined in =templates/objectplugin_mov.tmpl=:
+<verbatim>
+%TMPL:DEF{"object"}%<object{MP_OBJECT_ATTRIBUTES}>{MP_OBJECT_PARAMS}<embed{MP_EMBED_ATTRIBUTES}/></object>%TMPL:END%
+</verbatim>
+Placeholders ={MP_...}= are replaced by =%<nop>MEDIA{...}%= parameters. 
+
+To add other types add your own template using the same naming scheme (=objectplugin_ext.tmpl=).
+
 
 ---++ <nop>%TOPIC% Global Settings
 
@@ -247,7 +328,7 @@ Plugin settings are stored as preferences variables. To reference
 a plugin setting write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, for example, ==%<nop>INTERWIKIPLUGIN_SHORTDESCRIPTION%==
 
    * One line description, shown in the %SYSTEMWEB%.TextFormattingRules topic:
-   * Set SHORTDESCRIPTION = Embed Multi-Media Objects into Foswiki topics
+   * Set SHORTDESCRIPTION = Embed multimedia objects such as Flash or !QuickTime in topics
 
    * Default parameters for plugin. These *must* be defined. (For booleans use "TRUE" for true, anything else for false)
    * Set WIDTH = 320
@@ -255,6 +336,7 @@ a plugin setting write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, for example, =
    * Set CONTROLLER = TRUE
    * Set PLAY = TRUE
 
+   Enable debugging (written to =/data/debug.txt=):
    * Set DEBUG = 0
    
 ---++ Installation Instructions
@@ -264,14 +346,15 @@ a plugin setting write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, for example, =
 
 ---++ Plugin Info
 
-|  Plugin Authors: | TWiki:Main.PiersGoodhew, Foswiki:Main.SvenDowideit |
+|  Plugin Authors: | TWiki:Main.PiersGoodhew, Foswiki:Main.SvenDowideit, Foswiki:Main.ArthurClemens |
 |  Copyright: | &copy; 2006 TWiki:Main.PiersGoodhew, 2008-2009 Foswiki:Main.SvenDowideit, Foswiki:Main.ArthurClemens |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
-|  Plugin Version: | 1.2 |
-|  08 Mar 2009 | Integrated !EmbedFlashPlugin; major code refactoring. |
+|  Plugin Version: | 1.3 (08 Mar 2009) |
+|  08 Mar 2009 | 1.3: Mime types are now automatically added, so it is easier to get the browser call the right browser plugin. |
+|  08 Mar 2009 | 1.2: Integrated !EmbedFlashPlugin; major code refactoring. |
 |  03 Mar 2009 | !ObjectPlugin renamed to !MediaPlugin |
 |  20 Feb 2009 | port to Foswiki |
-|  20 Oct 2008 | modernise with Foswiki:Extensions.BuildContrib, add EMBED Tag, remove WikiWord issues, templatise html output, add !YouTube supprt - Foswiki:Main.SvenDowideit |
+|  20 Oct 2008 | modernise with Foswiki:Extensions.BuildContrib, add EMBED Tag, remove !WikiWord issues, templatise html output, add !YouTube supprt - Foswiki:Main.SvenDowideit |
 |  16 Oct 2006 | initial version |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
 |  Dependencies: | %$DEPENDENCIES% |

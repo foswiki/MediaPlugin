@@ -219,12 +219,86 @@ sub test_html {
 arbitrary="plplpl"
 }%';
     my $expected = <<EXPECTED;
-<noautolink><object data="$pubUrl/$webName/$topicName/sample.html" height="180" width="320"><param name="arbitrary" value="plplpl" /></object></noautolink>
+<noautolink><object data="$pubUrl/$webName/$topicName/sample.html" height="180" type="text/html" width="320"><param name="arbitrary" value="plplpl" /></object></noautolink>
 EXPECTED
     my $result =
       $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
+
+=pod
+
+Tests pdf: should automatically generate the correct type.
+
+=cut
+
+sub test_pdf {
+    my $this = shift;
+
+    my $topicName = $this->{test_topic};
+    my $webName   = $this->{test_web};
+	my $pubUrl = Foswiki::Func::getUrlHost() . Foswiki::Func::getPubUrlPath();
+
+    my $input  = '%MEDIA{
+"http://www.pdf-tools.com/public/downloads/whitepapers/whitepaper-pdfprimer.pdf"
+type="application/force-download"
+}%';
+    my $expected = <<EXPECTED;
+<noautolink><object data="http://www.pdf-tools.com/public/downloads/whitepapers/whitepaper-pdfprimer.pdf" height="180" type="application/force-download" width="320"></object></noautolink>
+EXPECTED
+    my $result =
+      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+    $this->do_testHtmlOutput( $expected, $result, 0 );
+}
+
+=pod
+
+Tests jpg: should automatically generate the correct type.
+
+=cut
+
+sub test_jpg {
+    my $this = shift;
+
+    my $topicName = $this->{test_topic};
+    my $webName   = $this->{test_web};
+	my $pubUrl = Foswiki::Func::getUrlHost() . Foswiki::Func::getPubUrlPath();
+
+    my $input  = '%MEDIA{
+data="%ATTACHURL%/img/big/Faux-Fur.jpg"
+}%';
+    my $expected = <<EXPECTED;
+<noautolink><object data="$pubUrl/$webName/$topicName/img/big/Faux-Fur.jpg" height="180" type="image/pjpeg" width="320"></object></noautolink>
+EXPECTED
+    my $result =
+      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+    $this->do_testHtmlOutput( $expected, $result, 0 );
+}
+
+=pod
+
+=cut
+
+sub test_midi {
+    my $this = shift;
+
+    my $topicName = $this->{test_topic};
+    my $webName   = $this->{test_web};
+	my $pubUrl = Foswiki::Func::getUrlHost() . Foswiki::Func::getPubUrlPath();
+
+    my $input  = '%MEDIA{
+"%ATTACHURL%/brahms-intermezzo-op118-no2.mid"
+play="false"
+}%';
+    my $expected = <<EXPECTED;
+<noautolink><object data="$pubUrl/$webName/$topicName/brahms-intermezzo-op118-no2.mid" height="180" type="audio/x-midi" width="320"><param name="autoplay" value="false" /><param name="autostart" value="false" /><param name="play" value="false" /></object></noautolink>
+EXPECTED
+    my $result =
+      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+    $this->do_testHtmlOutput( $expected, $result, 0 );
+}
+
+
 
 
 1;
