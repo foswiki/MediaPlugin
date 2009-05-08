@@ -27,4 +27,5 @@ pub/System/MediaPlugin/brahms-intermezzo-op118-no2.mid 0777
 templates/mediaplugin.tmpl
 templates/mediaplugin_mov.tmpl
 templates/mediaplugin_wmv.tmpl
+templates/mediaplugin_swf.tmpl
 
