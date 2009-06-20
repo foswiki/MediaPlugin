@@ -386,7 +386,7 @@ Use the notation =NAMEOFPLUGIN_NAMEOFSETTING=, for example: =MEDIAPLUGIN_DEBUG=
 |  Copyright: | &copy; 2006 TWiki:Main.PiersGoodhew, 2008-2009 Foswiki:Main.SvenDowideit, Foswiki:Main.ArthurClemens |
 |  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
 |  Plugin Version: | 1.3.1 (20 Jun 2009) |
-|  08 Mar 2009 | 1.3.1: Arthur Clemens: For performance, plugin settings must now be done in %MAINWEB%.SitePreferences. |
+|  08 Mar 2009 | 1.3.1: Arthur Clemens: Fixes media type lookup. For performance, plugin settings must now be done in %MAINWEB%.SitePreferences. |
 |  08 Mar 2009 | 1.3: Mime types are now automatically added, so it is easier to get the browser call the right browser plugin. |
 |  08 Mar 2009 | 1.2: Integrated !EmbedFlashPlugin; major code refactoring. |
 |  03 Mar 2009 | !ObjectPlugin renamed to !MediaPlugin |

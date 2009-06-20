@@ -17,7 +17,7 @@ use Error qw( :try );
 use strict;
 
 my $VERSION = '$Rev$';
-my $RELEASE = '1.3.1';
+my $RELEASE = '1.3.2';
 
 my $debug   = 0;
 my $installWeb;
@@ -86,7 +86,7 @@ Handle MEDIA tag.
 =cut
 
 sub _MEDIA {
-    my ( $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $this, $inParams, $inTopic, $inWeb ) = @_;
 
     # get media format
     my $source =
@@ -115,7 +115,7 @@ Calls _createHtml with type 'mov'.
 =cut
 
 sub _handleEmbedMov {
-    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $this, $inParams, $inTopic, $inWeb ) = @_;
 
     # QuickTime specific params
     my $localParams = $inParams;
@@ -137,7 +137,7 @@ Calls _createHtml with type 'wmv'.
 =cut
 
 sub _handleEmbedWmv {
-    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $this, $inParams, $inTopic, $inWeb ) = @_;
 
     # WMV specific params
     my $localParams = $inParams;
@@ -163,7 +163,7 @@ See [[http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701][Flash 
 =cut
 
 sub _handleEmbedSwf {
-    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $this, $inParams, $inTopic, $inWeb ) = @_;
 
     return _createHtml( $inSource, $inParams, 'swf' );
 }
@@ -179,7 +179,7 @@ Calls _createHtml with type 'generic'.
 =cut
 
 sub _handleEmbedGeneric {
-    my ( $inSource, $inExtension, $inSession, $inParams, $inTopic, $inWeb ) = @_;
+    my ( $inSource, $inExtension, $this, $inParams, $inTopic, $inWeb ) = @_;
 
     my $localParams = $inParams;
     $localParams->{'data'} ||= $inSource;
@@ -195,7 +195,7 @@ sub _handleEmbedGeneric {
 
 	# add mimetype if not passed
 	if (!$localParams->{'type'}) {
-		_createMimeTypeTable($inSession) if !defined $MIMETYPES;
+		_createMimeTypeTable($this) if !defined $MIMETYPES;
 		$localParams->{'type'} ||= $MIMETYPES->{$inExtension} if defined $MIMETYPES;
 	}
     return _createHtml( undef, $localParams, 'generic' );
@@ -286,6 +286,10 @@ sub _createHtml {
 
         my $value = $localParams->{$key};
 
+		if ($debug) {
+			$key ||= '';
+			$value ||= '';
+		}
         Foswiki::Func::writeDebug(
             "MediaPlugin::_createHtml; key=$key;value=$value")
           if $debug;
@@ -339,15 +343,17 @@ Creates mimetype tabe $MIMETYPES from reading and parsing attachment 'mimetypes.
 =cut
 
 sub _createMimeTypeTable {
-    my ( $inSession ) = @_;
+    my ( $this ) = @_;
 
-	try {
-		my $types =
-		  $inSession->{store}->getAttachmentStream( undef, $installWeb, $pluginName, 'mimetypes.txt' );
-		local $/ = undef;
-		%{ $MIMETYPES } = split( /\s+/, <$types> );
-		close($types);
-	}
+	my $topicObject = Foswiki::Meta->new( $this, $installWeb, $pluginName );
+	my $typesStream = $topicObject->openAttachment( 'mimetypes.txt', '<' );
+	
+	_debug("\t opened stream=$typesStream");
+
+	local $/ = undef;
+	%{ $MIMETYPES } = split( /\s+/, <$typesStream> );
+	$typesStream->close();
+	
 	catch Error::Simple with {
 		%{ $MIMETYPES } = ();
 	};
@@ -392,6 +398,17 @@ sub _trimSpaces {
 
     $_[0] =~ s/^[[:space:]]+//s;    # trim at start
     $_[0] =~ s/[[:space:]]+$//s;    # trim at end
+}
+
+=pod
+
+=cut
+
+sub _debug {
+    my ($inText) = @_;
+
+    Foswiki::Func::writeDebug($inText)
+      if $Foswiki::Plugins::MediaPlugin::debug;
 }
 
 1;

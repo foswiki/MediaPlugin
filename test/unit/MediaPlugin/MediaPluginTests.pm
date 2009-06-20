@@ -50,7 +50,7 @@ sub test_wmv {
 <noautolink><object classid="clsid:6BF52A52-394A-11d3-B153-00C04F79FAA6" codebase="http://activex.microsoft.com/activex/controls/mplayer/en/nsmp2inf.cab" height="286" width="320"><param name="ShowControls" value="true" /><param name="autostart" value="true" /><param name="type" value="application/x-mplayer2" /><embed ShowControls="true" autostart="true" height="286" pluginspage="http://www.microsoft.com/windows/windowsmedia/download/AllDownloads.aspx/" src="http://support.microsoft.com/support/mediaplayer/wmptest/samples/new/mediaexample.wmv" type="application/x-mplayer2" width="320"/></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -76,7 +76,7 @@ width="320"
 <noautolink><object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="196" width="320"><param name="autoplay" value="true" /><param name="controller" value="true" /><param name="src" value="$pubUrl/$webName/$topicName/sample.mov" /><embed autoplay="true" controller="true" height="196" pluginspage="/quicktime/download/" src="$pubUrl/$webName/$topicName/sample.mov" width="320"/></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -108,7 +108,7 @@ starttime="00:15:22.5"
 <noautolink><object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="196" width="320"><param name="autoplay" value="true" /><param name="bgcolor" value="#000000" /><param name="cache" value="true" /><param name="controller" value="true" /><param name="kioskmode" value="true" /><param name="loop" value="true" /><param name="src" value="$pubUrl/$webName/$topicName/sample.mov" /><param name="starttime" value="00:15:22.5" /><param name="volume" value="50" /><embed autoplay="true" bgcolor="#000000" cache="true" controller="true" height="196" kioskmode="true" loop="true" pluginspage="/quicktime/download/" src="$pubUrl/$webName/$topicName/sample.mov" starttime="00:15:22.5" volume="50" width="320"/></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -130,7 +130,7 @@ sub test_swf_basic {
 <noautolink><object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="180" width="320"><embed height="180" src="$pubUrl/$webName/$topicName/sample.swf" width="320"/></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -171,7 +171,7 @@ flashvars="flashvars="x=50&y=100&url=%ATTACHURL%/picture.jpg"
 <noautolink><object align="left" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="100%" id="my_movie" width="100%"><param name="allowscriptaccess" value="never" /><param name="base" value="$pubUrl/$webName/$topicName/swf/" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="flashvars=" /><param name="fullscreen" value="true" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="play" value="false" /><param name="quality" value="autohigh" /><param name="salign" value="tl" /><param name="scale" value="showall" /><param name="swliveconnect" value="true" /><param name="wmode" value="opaque" /><embed allowscriptaccess="never" base="$pubUrl/$webName/$topicName/swf/" bgcolor="#ffffff" flashvars="flashvars=" fullscreen="true" height="100%" loop="false" menu="false" play="false" quality="autohigh" salign="tl" scale="showall" src="$pubUrl/$webName/$topicName/swf/ThumbController.swf" swliveconnect="true" width="100%" wmode="opaque"/></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -197,7 +197,7 @@ height="344"
 <noautolink><object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="344" width="425"><embed height="344" src="http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1" width="425"/></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -222,7 +222,7 @@ arbitrary="plplpl"
 <noautolink><object data="$pubUrl/$webName/$topicName/sample.html" height="180" type="text/html" width="320"><param name="arbitrary" value="plplpl" /></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -247,7 +247,7 @@ type="application/force-download"
 <noautolink><object data="http://www.pdf-tools.com/public/downloads/whitepapers/whitepaper-pdfprimer.pdf" height="180" type="application/force-download" width="320"></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -271,7 +271,7 @@ data="%ATTACHURL%/img/big/Faux-Fur.jpg"
 <noautolink><object data="$pubUrl/$webName/$topicName/img/big/Faux-Fur.jpg" height="180" type="image/pjpeg" width="320"></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
@@ -294,7 +294,7 @@ play="false"
 <noautolink><object data="$pubUrl/$webName/$topicName/brahms-intermezzo-op118-no2.mid" height="180" type="audio/x-midi" width="320"><param name="autoplay" value="false" /><param name="autostart" value="false" /><param name="play" value="false" /></object></noautolink>
 EXPECTED
     my $result =
-      $this->{twiki}->handleCommonTags( $input, $webName, $topicName );
+      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
