@@ -17,7 +17,7 @@ use Error qw( :try );
 use strict;
 
 my $VERSION = '$Rev$';
-my $RELEASE = '1.3';
+my $RELEASE = '1.3.1';
 
 my $debug   = 0;
 my $installWeb;
@@ -30,8 +30,7 @@ my $PLUGIN_SETTING_SHOW_CONTROLLER;
 my $PLUGIN_SETTING_AUTOPLAY;
 
 my $MIMETYPES; # filled by parsing mimetypes.txt, when necessary
-
-#my $htmlId; # not used
+our $NO_PREFS_IN_TOPIC = 1;
 
 =pod
 
@@ -57,16 +56,16 @@ sub initPlugin {
 	
     #TODO: these should be moved into Config.spec for performance.
     $PLUGIN_SETTING_HEIGHT =
-      Foswiki::Func::getPreferencesValue("\U$pluginName\E_HEIGHT");
+      Foswiki::Func::getPreferencesValue("\U$pluginName\E_HEIGHT") || 180;
     $PLUGIN_SETTING_WIDTH =
-      Foswiki::Func::getPreferencesValue("\U$pluginName\E_WIDTH");
+      Foswiki::Func::getPreferencesValue("\U$pluginName\E_WIDTH") || 320;
     $PLUGIN_SETTING_SHOW_CONTROLLER =
-      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_CONTROLLER") );
+      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_CONTROLLER") ) || 'true';
     $PLUGIN_SETTING_AUTOPLAY =
-      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_PLAY") );
+      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_PLAY") ) || 'true';
 
     $debug =
-      Foswiki::Func::isTrue( TWiki::Func::getPluginPreferencesFlag("DEBUG") );
+      Foswiki::Func::getPreferencesFlag("\U$pluginName\E_DEBUG" );
 
     # register the OBJECT function to handle %MEDIA{...}%
     Foswiki::Func::registerTagHandler( 'MEDIA', \&_MEDIA );
