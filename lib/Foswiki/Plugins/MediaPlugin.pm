@@ -248,7 +248,7 @@ sub _createHtml {
     if ($debug) {
         use Data::Dumper;
         Foswiki::Func::writeDebug(
-            "MediaPlugin::_createHtml; type=$type; localParams="
+            "\t type=$type; localParams="
               . Dumper($localParams) );
     }
 
@@ -291,7 +291,7 @@ sub _createHtml {
 			$value ||= '';
 		}
         Foswiki::Func::writeDebug(
-            "MediaPlugin::_createHtml; key=$key;value=$value")
+            "\t key=$key;value=$value")
           if $debug;
 
         if ( $object_only_attributes{$key} ) {
@@ -346,7 +346,14 @@ sub _createMimeTypeTable {
     my ( $this ) = @_;
 
 	my $topicObject = Foswiki::Meta->new( $this, $installWeb, $pluginName );
-	my $typesStream = $topicObject->openAttachment( 'mimetypes.txt', '<' );
+	
+	my $typesStream;
+	if ( $Foswiki::Plugins::VERSION < 2.1 ) {
+	    $typesStream =
+          $this->{store}->getAttachmentStream( $Foswiki::Plugins::SESSION->{user}, $installWeb, $pluginName, 'mimetypes.txt' );
+	} else {
+        $typesStream = $topicObject->openAttachment( 'mimetypes.txt', '<' );
+	}
 	
 	_debug("\t opened stream=$typesStream");
 
