@@ -1,7 +1,7 @@
 # Release manifest for MediaPlugin
 data/System/MediaPlugin.txt 0644 Documentation
 lib/Foswiki/Plugins/MediaPlugin.pm 0644 Perl module
-
+lib/Foswiki/Plugins/MediaPlugin/Config.spec 0444 Settings
 pub/System/MediaPlugin/mimetypes.txt
 
 # example files

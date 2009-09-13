@@ -8,18 +8,21 @@
 
 =cut
 
-# change the package name and $pluginName!!!
 package Foswiki::Plugins::MediaPlugin;
-
-use Error qw( :try );
 
 # Always use strict to enforce variable scoping
 use strict;
+use Error qw( :try );
 
-my $VERSION = '$Rev$';
-my $RELEASE = '1.3.2';
+our $VERSION           = '$Rev$';
+our $RELEASE           = '1.3.3';
+our $NO_PREFS_IN_TOPIC = 1;
+our $SHORTDESCRIPTION =
+  'Embed multimedia objects such as Flash or <nop>QuickTime in topics';
 
-my $debug   = 0;
+my $topic;
+my $web;
+my $user;
 my $installWeb;
 my $pluginName = 'MediaPlugin';
 
@@ -28,9 +31,7 @@ my $PLUGIN_SETTING_WIDTH;
 my $PLUGIN_SETTING_HEIGHT;
 my $PLUGIN_SETTING_SHOW_CONTROLLER;
 my $PLUGIN_SETTING_AUTOPLAY;
-
-my $MIMETYPES; # filled by parsing mimetypes.txt, when necessary
-our $NO_PREFS_IN_TOPIC = 1;
+my $MIMETYPES;    # filled by parsing mimetypes.txt, when necessary
 
 =pod
 
@@ -43,7 +44,7 @@ our $NO_PREFS_IN_TOPIC = 1;
 =cut
 
 sub initPlugin {
-    my ( $inTopic, $inWeb, $inUser, $inInstallWeb ) = @_;
+    ( $topic, $web, $user, $installWeb ) = @_;
 
     # check for Plugins.pm versions
     if ( $Foswiki::Plugins::VERSION < 1.026 ) {
@@ -52,20 +53,18 @@ sub initPlugin {
         return 0;
     }
 
-	$installWeb = $inInstallWeb;
-	
-    #TODO: these should be moved into Config.spec for performance.
-    $PLUGIN_SETTING_HEIGHT =
-      Foswiki::Func::getPreferencesValue("\U$pluginName\E_HEIGHT") || 180;
-    $PLUGIN_SETTING_WIDTH =
-      Foswiki::Func::getPreferencesValue("\U$pluginName\E_WIDTH") || 320;
-    $PLUGIN_SETTING_SHOW_CONTROLLER =
-      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_CONTROLLER") ) || 'true';
-    $PLUGIN_SETTING_AUTOPLAY =
-      lc( Foswiki::Func::getPreferencesValue("\U$pluginName\E_PLAY") ) || 'true';
+    # a user reported having an empty installWeb value
+    # this should set the default in case it is missing for some reason
+    $installWeb ||= $Foswiki::cfg{SystemWebName};
 
-    $debug =
-      Foswiki::Func::getPreferencesFlag("\U$pluginName\E_DEBUG" );
+    $PLUGIN_SETTING_WIDTH  = $Foswiki::cfg{Plugins}{$pluginName}{Width}  || 320;
+    $PLUGIN_SETTING_HEIGHT = $Foswiki::cfg{Plugins}{$pluginName}{Height} || 180;
+    $PLUGIN_SETTING_SHOW_CONTROLLER =
+      Foswiki::Func::isTrue( $Foswiki::cfg{Plugins}{$pluginName}{ShowController}
+          || 1 ) ? 'true' : 'false';
+    $PLUGIN_SETTING_AUTOPLAY =
+      Foswiki::Func::isTrue( $Foswiki::cfg{Plugins}{$pluginName}{AutoPlay}
+          || 1 ) ? 'true' : 'false';
 
     # register the OBJECT function to handle %MEDIA{...}%
     Foswiki::Func::registerTagHandler( 'MEDIA', \&_MEDIA );
@@ -95,7 +94,7 @@ sub _MEDIA {
       || $inParams->{data}
       || $inParams->{filename};
     my ( $fileHeader, $extension ) = ( $source =~ /(.*)\.+(.*$)/i );
-	$extension = lc($extension);
+    $extension = lc($extension);
     $extension = 'swf' if ( $source =~ m/youtube.com/i );
 
     return _handleEmbedSwf( $source, $extension, @_ ) if $extension eq 'swf';
@@ -183,21 +182,24 @@ sub _handleEmbedGeneric {
 
     my $localParams = $inParams;
     $localParams->{'data'} ||= $inSource;
-    
+
     # we are not sure which plugin will play (possible) audio/video
     # so we add both - only if param 'play' is passed explicitly
     # (otherwise we set autostart to jpeg files which is a bit silly)
-    $localParams->{'autostart'} ||= $localParams->{'play'} if $localParams->{'play'};
-    $localParams->{'autoplay'} ||= $localParams->{'play'} if $localParams->{'play'};
-      
+    $localParams->{'autostart'} ||= $localParams->{'play'}
+      if $localParams->{'play'};
+    $localParams->{'autoplay'} ||= $localParams->{'play'}
+      if $localParams->{'play'};
+
     delete $localParams->{'src'};
     delete $localParams->{'_DEFAULT'};
 
-	# add mimetype if not passed
-	if (!$localParams->{'type'}) {
-		_createMimeTypeTable($this) if !defined $MIMETYPES;
-		$localParams->{'type'} ||= $MIMETYPES->{$inExtension} if defined $MIMETYPES;
-	}
+    # add mimetype if not passed
+    if ( !$localParams->{'type'} ) {
+        _createMimeTypeTable($this) if !defined $MIMETYPES;
+        $localParams->{'type'} ||= $MIMETYPES->{$inExtension}
+          if defined $MIMETYPES;
+    }
     return _createHtml( undef, $localParams, 'generic' );
 }
 
@@ -225,12 +227,9 @@ sub _createHtml {
     delete $default_attributes{_RAW};
     delete $default_attributes{_DEFAULT};
 
-    if ($debug) {
-        use Data::Dumper;
-        Foswiki::Func::writeDebug(
-"MediaPlugin::_createHtml; default_attributes read from template '$templateName':"
-              . Dumper(%default_attributes) );
-    }
+    _debugData(
+        "_createHtml; default_attributes read from template '$templateName':",
+        \%default_attributes );
 
     my $localParams;
     if (%default_attributes) {
@@ -245,12 +244,7 @@ sub _createHtml {
     $localParams->{'width'}  ||= $PLUGIN_SETTING_WIDTH;
     $localParams->{'height'} ||= $PLUGIN_SETTING_HEIGHT;
 
-    if ($debug) {
-        use Data::Dumper;
-        Foswiki::Func::writeDebug(
-            "\t type=$type; localParams="
-              . Dumper($localParams) );
-    }
+    _debugData( "\t type=$type; localParams=", $localParams );
 
     my $txt_object_only_attributes =
       Foswiki::Func::expandTemplate('syntax:object_only_attributes');
@@ -286,13 +280,11 @@ sub _createHtml {
 
         my $value = $localParams->{$key};
 
-		if ($debug) {
-			$key ||= '';
-			$value ||= '';
-		}
-        Foswiki::Func::writeDebug(
-            "\t key=$key;value=$value")
-          if $debug;
+        if ( $Foswiki::cfg{Plugins}{$pluginName}{Debug} ) {
+            $key   ||= '';
+            $value ||= '';
+        }
+        _debug("\t key=$key;value=$value");
 
         if ( $object_only_attributes{$key} ) {
             $text =~ s/({MP_OBJECT_ATTRIBUTES})/ $key="$value"$1/go;
@@ -343,31 +335,31 @@ Creates mimetype tabe $MIMETYPES from reading and parsing attachment 'mimetypes.
 =cut
 
 sub _createMimeTypeTable {
-    my ( $this ) = @_;
+    my ($this) = @_;
 
-	my $topicObject = Foswiki::Meta->new( $this, $installWeb, $pluginName );
-	
-	my $typesStream;
-	if ( $Foswiki::Plugins::VERSION < 2.1 ) {
-	    $typesStream =
-          $this->{store}->getAttachmentStream( $Foswiki::Plugins::SESSION->{user}, $installWeb, $pluginName, 'mimetypes.txt' );
-	} else {
+    my $topicObject = Foswiki::Meta->new( $this, $installWeb, $pluginName );
+
+    my $typesStream;
+    if ( $Foswiki::Plugins::VERSION < 2.1 ) {
+        $typesStream =
+          $this->{store}
+          ->getAttachmentStream( $Foswiki::Plugins::SESSION->{user},
+            $installWeb, $pluginName, 'mimetypes.txt' );
+    }
+    else {
         $typesStream = $topicObject->openAttachment( 'mimetypes.txt', '<' );
-	}
-	
-	_debug("\t opened stream=$typesStream");
+    }
 
-	local $/ = undef;
-	%{ $MIMETYPES } = split( /\s+/, <$typesStream> );
-	$typesStream->close();
-	
-	catch Error::Simple with {
-		%{ $MIMETYPES } = ();
-	};
-	if ($debug) {
-		use Data::Dumper;
-		Foswiki::Func::writeDebug("MediaPlugin::_createMimeTypeTable; MIMETYPES=" . (keys %{ $MIMETYPES }) . " keys");
-	}
+    _debug("\t opened stream=$typesStream");
+
+    local $/ = undef;
+    %{$MIMETYPES} = split( /\s+/, <$typesStream> );
+    $typesStream->close();
+
+    catch Error::Simple with {
+        %{$MIMETYPES} = ();
+    };
+    _debugData( "_createMimeTypeTable; MIMETYPES=", \( keys %{$MIMETYPES} ) );
 }
 
 =pod
@@ -409,13 +401,30 @@ sub _trimSpaces {
 
 =pod
 
+Shorthand debugging call.
+
 =cut
 
 sub _debug {
-    my ($inText) = @_;
+    my ($text) = @_;
 
-    Foswiki::Func::writeDebug($inText)
-      if $Foswiki::Plugins::MediaPlugin::debug;
+    return if !$Foswiki::cfg{Plugins}{$pluginName}{Debug};
+
+    $text = "$pluginName: $text";
+
+    #print STDERR $text . "\n";
+    Foswiki::Func::writeDebug("$text");
+}
+
+sub _debugData {
+    my ( $text, $data ) = @_;
+
+    return if !$Foswiki::cfg{Plugins}{$pluginName}{Debug};
+    Foswiki::Func::writeDebug("$pluginName; $text:");
+    if ($data) {
+        eval
+'use Data::Dumper; local $Data::Dumper::Terse = 1; local $Data::Dumper::Indent = 1; Foswiki::Func::writeDebug(Dumper($data));';
+    }
 }
 
 1;
