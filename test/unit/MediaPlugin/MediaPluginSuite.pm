@@ -1,5 +1,6 @@
 package MediaPluginSuite;
-use base 'Unit::TestSuite';
+use Unit::TestSuite;
+our @ISA = qw( Unit::TestSuite );
 
 sub include_tests { return 'MediaPluginTests' };
 
