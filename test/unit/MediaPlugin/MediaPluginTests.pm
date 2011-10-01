@@ -8,7 +8,20 @@ use Foswiki::Func;
 use Foswiki::UI::Save;
 use Error qw( :try );
 use Foswiki::Plugins::MediaPlugin;
-      
+
+my $DEBUG = 0;
+
+sub loadExtraConfig {
+    my $this = shift;
+    $this->SUPER::loadExtraConfig();
+    setLocalSite();
+}
+
+sub setLocalSite {
+    $Foswiki::cfg{Plugins}{MediaPlugin}{Enabled}     = 1;
+    $Foswiki::cfg{Plugins}{MediaPlugin}{Debug}       = $DEBUG;
+}
+
 =pod
 
 This formats the text up to immediately before <nop>s are removed, so we
@@ -128,7 +141,7 @@ sub test_swf_basic {
 
     my $input  = '%MEDIA{"%ATTACHURL%/sample.swf"}%';
     my $expected = <<EXPECTED;
-<noautolink><object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="180" width="320"><embed height="180" src="$pubUrl/$webName/$topicName/sample.swf" width="320"/></object></noautolink>
+<noautolink><object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="180" width="320"><param name="movie" value="$pubUrl/$webName/$topicName/sample.swf" /><embed height="180" src="$pubUrl/$webName/$topicName/sample.swf" width="320"/></object></noautolink>
 EXPECTED
     my $result =
       Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
@@ -169,63 +182,13 @@ swliveconnect="true"
 flashvars="flashvars="x=50&y=100&url=%ATTACHURL%/picture.jpg"
 }%';
     my $expected = <<EXPECTED;
-<noautolink><object align="left" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="100%" id="my_movie" width="100%"><param name="allowscriptaccess" value="never" /><param name="base" value="$pubUrl/$webName/$topicName/swf/" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="flashvars=" /><param name="fullscreen" value="true" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="play" value="false" /><param name="quality" value="autohigh" /><param name="salign" value="tl" /><param name="scale" value="showall" /><param name="swliveconnect" value="true" /><param name="wmode" value="opaque" /><embed allowscriptaccess="never" base="$pubUrl/$webName/$topicName/swf/" bgcolor="#ffffff" flashvars="flashvars=" fullscreen="true" height="100%" loop="false" menu="false" play="false" quality="autohigh" salign="tl" scale="showall" src="$pubUrl/$webName/$topicName/swf/ThumbController.swf" swliveconnect="true" width="100%" wmode="opaque"/></object></noautolink>
+<noautolink><object align="left" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="100%" id="my_movie" width="100%"><param name="allowscriptaccess" value="never" /><param name="base" value="$pubUrl/$webName/$topicName/swf/" /><param name="bgcolor" value="#ffffff" /><param name="flashvars" value="flashvars=" /><param name="fullscreen" value="true" /><param name="loop" value="false" /><param name="menu" value="false" /><param name="movie" value="$pubUrl/$webName/$topicName/swf/ThumbController.swf" /><param name="play" value="false" /><param name="quality" value="autohigh" /><param name="salign" value="tl" /><param name="scale" value="showall" /><param name="swliveconnect" value="true" /><param name="wmode" value="opaque" /><embed allowscriptaccess="never" base="$pubUrl/$webName/$topicName/swf/" bgcolor="#ffffff" flashvars="flashvars=" fullscreen="true" height="100%" loop="false" menu="false" play="false" quality="autohigh" salign="tl" scale="showall" src="$pubUrl/$webName/$topicName/swf/ThumbController.swf" swliveconnect="true" width="100%" wmode="opaque"/></object></noautolink>
 EXPECTED
     my $result =
       Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
     $this->do_testHtmlOutput( $expected, $result, 0 );
 }
 
-=pod
-
-Test YouTube
-
-=cut
-
-sub test_youtube {
-    my $this = shift;
-
-    my $topicName = $this->{test_topic};
-    my $webName   = $this->{test_web};
-	my $pubUrl = Foswiki::Func::getUrlHost() . Foswiki::Func::getPubUrlPath();
-
-    my $input  = '%MEDIA{
-"http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1"
-width="425"
-height="344"
-}%';
-    my $expected = <<EXPECTED;
-<noautolink><object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="344" width="425"><embed height="344" src="http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1" width="425"/></object></noautolink>
-EXPECTED
-    my $result =
-      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
-    $this->do_testHtmlOutput( $expected, $result, 0 );
-}
-
-=pod
-
-Test html
-
-=cut
-
-sub test_html {
-    my $this = shift;
-
-    my $topicName = $this->{test_topic};
-    my $webName   = $this->{test_web};
-	my $pubUrl = Foswiki::Func::getUrlHost() . Foswiki::Func::getPubUrlPath();
-
-    my $input  = '%MEDIA{
-"%ATTACHURL%/sample.html"
-arbitrary="plplpl"
-}%';
-    my $expected = <<EXPECTED;
-<noautolink><object data="$pubUrl/$webName/$topicName/sample.html" height="180" type="text/html" width="320"><param name="arbitrary" value="plplpl" /></object></noautolink>
-EXPECTED
-    my $result =
-      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
-    $this->do_testHtmlOutput( $expected, $result, 0 );
-}
 
 =pod
 
@@ -245,31 +208,7 @@ sub test_pdf {
 type="application/force-download"
 }%';
     my $expected = <<EXPECTED;
-<noautolink><object data="http://www.pdf-tools.com/public/downloads/whitepapers/whitepaper-pdfprimer.pdf" height="180" type="application/force-download" width="320"></object></noautolink>
-EXPECTED
-    my $result =
-      Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
-    $this->do_testHtmlOutput( $expected, $result, 0 );
-}
-
-=pod
-
-Tests jpg: should automatically generate the correct type.
-
-=cut
-
-sub test_jpg {
-    my $this = shift;
-
-    my $topicName = $this->{test_topic};
-    my $webName   = $this->{test_web};
-	my $pubUrl = Foswiki::Func::getUrlHost() . Foswiki::Func::getPubUrlPath();
-
-    my $input  = '%MEDIA{
-data="%ATTACHURL%/img/big/Faux-Fur.jpg"
-}%';
-    my $expected = <<EXPECTED;
-<noautolink><object data="$pubUrl/$webName/$topicName/img/big/Faux-Fur.jpg" height="180" type="image/pjpeg" width="320"></object></noautolink>
+<noautolink><object><param name="data" value="http://www.pdf-tools.com/public/downloads/whitepapers/whitepaper-pdfprimer.pdf" /><param name="height" value="180" /><param name="type" value="application/force-download" /><param name="width" value="320" /></object></noautolink>
 EXPECTED
     my $result =
       Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );
@@ -292,7 +231,7 @@ sub test_midi {
 play="false"
 }%';
     my $expected = <<EXPECTED;
-<noautolink><object data="$pubUrl/$webName/$topicName/brahms-intermezzo-op118-no2.mid" height="180" type="audio/x-midi" width="320"><param name="autoplay" value="false" /><param name="autostart" value="false" /><param name="play" value="false" /></object></noautolink>
+<noautolink><object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" height="180" width="320"><param name="autoplay" value="false" /><param name="autostart" value="false" /><param name="data" value="$pubUrl/$webName/$topicName/brahms-intermezzo-op118-no2.mid" /><param name="play" value="false" /><embed autoplay="false" autostart="false" data="$pubUrl/$webName/$topicName/brahms-intermezzo-op118-no2.mid" height="180" play="false" src="$pubUrl/$webName/$topicName/brahms-intermezzo-op118-no2.mid" width="320"/></object></noautolink>
 EXPECTED
     my $result =
       Foswiki::Func::expandCommonVariables( $input, $topicName, $webName );

@@ -15,7 +15,7 @@ use strict;
 use Error qw( :try );
 
 our $VERSION           = '$Rev$';
-our $RELEASE           = '1.3.3';
+our $RELEASE           = '1.3.4';
 our $NO_PREFS_IN_TOPIC = 1;
 our $SHORTDESCRIPTION =
   'Embed multimedia objects such as Flash or <nop>QuickTime in topics';
@@ -94,12 +94,14 @@ sub _MEDIA {
       || $inParams->{data}
       || $inParams->{filename};
     my ( $fileHeader, $extension ) = ( $source =~ /(.*)\.+(.*$)/i );
+    $extension =~ s/^(\w+).*?$/$1/;
     $extension = lc($extension);
     $extension = 'swf' if ( $source =~ m/youtube.com/i );
 
     return _handleEmbedSwf( $source, $extension, @_ ) if $extension eq 'swf';
     return _handleEmbedMov( $source, $extension, @_ ) if $extension eq 'mov';
     return _handleEmbedWmv( $source, $extension, @_ ) if $extension eq 'wmv';
+    return _handleEmbedAudio( $source, $extension, @_ ) if $extension =~ m/(midi|mid|wav|ogg|mp3)/;
 
     # generic formats:
     return _handleEmbedGeneric( $source, $extension, @_ );
@@ -164,6 +166,31 @@ See [[http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701][Flash 
 sub _handleEmbedSwf {
     my ( $inSource, $inExtension, $this, $inParams, $inTopic, $inWeb ) = @_;
 
+    $inParams->{'src'} = $inSource;
+    $inParams->{'movie'} = $inSource;
+    return _createHtml( $inSource, $inParams, 'swf' );
+}
+
+=pod
+
+---++ _handleEmbedAudio( $source, $session, $params, $topic, $web ) -> $html
+
+=cut
+
+sub _handleEmbedAudio {
+    my ( $inSource, $inExtension, $this, $inParams, $inTopic, $inWeb ) = @_;
+
+    $inParams->{'src'} = $inSource;
+    $inParams->{'data'} = $inSource;
+    
+    # we are not sure which plugin will play (possible) audio/video
+    # so we add both - only if param 'play' is passed explicitly
+    # (otherwise we set autostart to jpeg files which is a bit silly)
+    $inParams->{'autostart'} ||= $inParams->{'play'}
+      if $inParams->{'play'};
+    $inParams->{'autoplay'} ||= $inParams->{'play'}
+      if $inParams->{'play'};
+      
     return _createHtml( $inSource, $inParams, 'swf' );
 }
 
@@ -233,7 +260,7 @@ sub _createHtml {
 
     my $localParams;
     if (%default_attributes) {
-        $localParams = _mergeHashes( $inParams, \%default_attributes );
+        $localParams = _mergeHashes( \%default_attributes, $inParams );
     }
     else {
         $localParams = $inParams;
@@ -287,21 +314,24 @@ sub _createHtml {
         _debug("\t key=$key;value=$value");
 
         if ( $object_only_attributes{$key} ) {
-            $text =~ s/({MP_OBJECT_ATTRIBUTES})/ $key="$value"$1/go;
-            next;
-        }
-        if ( $embed_only_attributes{$key} ) {
-            $text =~ s/({MP_EMBED_ATTRIBUTES})/ $key="$value"$1/go;
-            next;
-        }
-        if ( $object_attributes{$key} ) {
-            $text =~ s/({MP_OBJECT_ATTRIBUTES})/ $key="$value"$1/go;
-        }
-        else {
-            $text =~
+        	if ( $object_attributes{$key} ) {
+				$text =~ s/({MP_OBJECT_ATTRIBUTES})/ $key="$value"$1/go;
+			} else {
+	            $text =~
               s/({MP_OBJECT_PARAMS})/<param name="$key" value="$value" \/>$1/go;
+	        }
+        } elsif ( $embed_only_attributes{$key} ) {
+            $text =~ s/({MP_EMBED_ATTRIBUTES})/ $key="$value"$1/go;
+        } else {
+			if ( $object_attributes{$key} ) {
+				$text =~ s/({MP_OBJECT_ATTRIBUTES})/ $key="$value"$1/go;
+			}
+			else {
+				$text =~
+				  s/({MP_OBJECT_PARAMS})/<param name="$key" value="$value" \/>$1/go;
+			}
+        	$text =~ s/({MP_EMBED_ATTRIBUTES})/ $key="$value"$1/go;
         }
-        $text =~ s/({MP_EMBED_ATTRIBUTES})/ $key="$value"$1/go;
     }
 
     # clean up placeholders, no longer needed
@@ -309,6 +339,8 @@ sub _createHtml {
     $text =~ s/{MP_OBJECT_PARAMS}//go;
     $text =~ s/{MP_EMBED_ATTRIBUTES}//go;
 
+	_debug("output=$text");
+	
     return "<noautolink>$text</noautolink>";
 }
 

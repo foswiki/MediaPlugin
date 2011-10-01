@@ -92,7 +92,7 @@ suffix="</h4>"
 | =scale= | Scaling of Flash movie. | ="noborder"=, ="exactfit"=, ="noscale"=, ="showall"= |
 | =quality= | Playback quality. | ="best"=, ="high"=, ="medium"=, ="low"=, ="autohigh"=, ="autolow"= |
 | =menu= | Should right-click on Flash movie show a (default) menu? Note that with the Flash 7 player the menu cannot be removed. | ="true"= or ="false"= |
-| =id=     | ID of Flash movie; for general use not necessary to specify. | ="movie2"= |
+| =id=     | ID of Flash movie; should be the same value as =name= (specify both) | ="movie2"= |
 | =wmode= | Sets the Window Mode property of the Flash movie for transparency, layering, and positioning in the browser. %BR% \
 =window= - movie plays in its own rectangular window on a web page. %BR% \
 =opaque= - the movie hides everything on the page behind it. %BR% \
@@ -222,23 +222,6 @@ base="%ATTACHURL%/swf/"
 
 ---+++ Flash from other sites
 
----++++ !YouTube
-<verbatim>
-%MEDIA{
-"http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1"
-width="425"
-height="344"
-}%
-</verbatim>
-generates:
-
-%MEDIA{
-"http://www.youtube.com/v/-dnL00TdmLY&hl=en&fs=1"
-width="425"
-height="344"
-}%
-
-
 ---++++ Yahoo Maps in Flash
 <verbatim>
 %MEDIA{
@@ -256,52 +239,6 @@ width="600px"
 height="400px"
 }%
 
----++++ Digg Labs
-
-<verbatim>
-%MEDIA{
-"http://labs.digg.com/arc/main.swf" 
-base="http://labs.digg.com/arc/"
-width="600px"
-height="400px"
-}%
-</verbatim>
-
-%MEDIA{
-"http://labs.digg.com/arc/main.swf" 
-base="http://labs.digg.com/arc/"
-width="600px"
-height="400px"
-}%
-
----+++ html
-<verbatim>
-%MEDIA{
-"%ATTACHURL%/sample.html"
-arbitrary="plplpl"
-}%
-</verbatim>
-
-generates:
-
-%MEDIA{
-"%ATTACHURL%/sample.html"
-arbitrary="plplpl"
-}%
-
----+++ png
-<verbatim>
-%MEDIA{
-data="%ATTACHURL%/img/big/Faux-Fur.jpg"
-}%
-</verbatim>
-generates:
-
-%MEDIA{
-data="%ATTACHURL%/img/big/Faux-Fur.jpg"
-}%
-
-Note: you should not really consider displaying images this way.
 
 ---+++ pdf
 <verbatim>
@@ -319,18 +256,59 @@ width="100%"
 height="100%"
 }%
 
----+++ midi
+---+++ mp3
 <verbatim>
 %MEDIA{
-"%ATTACHURL%/brahms-intermezzo-op118-no2.mid"
+"%ATTACHURL%/test.mp3"
 play="false"
+autoplay="false"
+height="20"
 }%
 </verbatim>
 generates:
 
 %MEDIA{
-"%ATTACHURL%/brahms-intermezzo-op118-no2.mid"
+"%ATTACHURL%/test.mp3"
 play="false"
+autoplay="false"
+height="20"
+}%
+
+---+++ wav
+<verbatim>
+%MEDIA{
+"%ATTACHURL%/test.wav"
+play="false"
+autoplay="false"
+height="20"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"%ATTACHURL%/test.wav"
+play="false"
+autoplay="false"
+height="20"
+}%
+
+
+---+++ midi
+<verbatim>
+%MEDIA{
+"%ATTACHURL%/test.mid"
+play="false"
+autoplay="false"
+height="20"
+}%
+</verbatim>
+generates:
+
+%MEDIA{
+"%ATTACHURL%/test.mid"
+play="false"
+autoplay="false"
+height="20"
 }%
 
 ---++ Notes for developers
@@ -387,6 +365,7 @@ Change default settings in [[%SCRIPTURL{"configure"}%/#MediaPlugin$Extensions][c
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change History: | <!-- specify latest version first -->&nbsp; |
+|  01 Oct 2011 | 1.3.4 Arthur Clemens: Fixed an issue where the filetype was not read if it was appended with a query string. Fixes a bug where default attributes read from the =tmpl= could not be overridden. Added audio examples. |
 |  13 Sep 2009 | 1.3.3 Arthur Clemens: small refactoring; moved default settings to Configure. |
 |  22 Jun 2009 | 1.3.2 Arthur Clemens: Fixed call to unreleased internal function =openAttachment=. |
 |  20 Jun 2009 | 1.3.1: Arthur Clemens: Fixes media type lookup. For performance, plugin settings must now be done in %MAINWEB%.SitePreferences. |

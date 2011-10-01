@@ -3,7 +3,6 @@ data/System/MediaPlugin.txt 0644 Documentation
 lib/Foswiki/Plugins/MediaPlugin.pm 0644 Perl module
 lib/Foswiki/Plugins/MediaPlugin/Config.spec 0444 Settings
 pub/System/MediaPlugin/mimetypes.txt
-
 # example files
 pub/System/MediaPlugin/sample.swf
 pub/System/MediaPlugin/sample.mov
@@ -21,11 +20,11 @@ pub/System/MediaPlugin/img/big/Dandelion-Seeds.jpg 0777
 pub/System/MediaPlugin/img/big/Dandelion.jpg 0777
 pub/System/MediaPlugin/img/big/Faux-Fur.jpg 0777
 pub/System/MediaPlugin/swf/ThumbController.swf 0777
-pub/System/MediaPlugin/brahms-intermezzo-op118-no2.mid 0777
-
+pub/System/MediaPlugin/mp3.mid 0777
+pub/System/MediaPlugin/wav.mid 0777
+pub/System/MediaPlugin/test.mid 0777
 # stub templates
 templates/mediaplugin.tmpl
 templates/mediaplugin_mov.tmpl
 templates/mediaplugin_wmv.tmpl
 templates/mediaplugin_swf.tmpl
-
