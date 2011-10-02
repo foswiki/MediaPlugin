@@ -20,8 +20,8 @@ pub/System/MediaPlugin/img/big/Dandelion-Seeds.jpg 0777
 pub/System/MediaPlugin/img/big/Dandelion.jpg 0777
 pub/System/MediaPlugin/img/big/Faux-Fur.jpg 0777
 pub/System/MediaPlugin/swf/ThumbController.swf 0777
-pub/System/MediaPlugin/mp3.mid 0777
-pub/System/MediaPlugin/wav.mid 0777
+pub/System/MediaPlugin/test.mp3 0777
+pub/System/MediaPlugin/test.wav 0777
 pub/System/MediaPlugin/test.mid 0777
 # stub templates
 templates/mediaplugin.tmpl
